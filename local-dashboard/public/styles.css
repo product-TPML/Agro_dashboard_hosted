@@ -43,6 +43,8 @@ select {
 
 .shell-top {
   margin-bottom: 16px;
+  position: relative;
+  z-index: 35;
 }
 
 .shell-top-inner {
@@ -56,6 +58,8 @@ select {
   min-width: 96px;
   display: flex;
   align-items: center;
+  position: relative;
+  z-index: 36;
 }
 
 .locale-toggle {
@@ -66,6 +70,8 @@ select {
   border-radius: 999px;
   background: rgba(255, 250, 246, 0.96);
   box-shadow: var(--shadow);
+  position: relative;
+  z-index: 36;
 }
 
 .locale-toggle-button {

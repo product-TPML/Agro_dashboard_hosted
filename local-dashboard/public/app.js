@@ -222,7 +222,7 @@
     if (route.view === "table") {
       primeTableArrivalUi();
     } else {
-      clearFilterHintTimer();
+      clearFilterHintTimers();
     }
 
     render();
@@ -249,7 +249,7 @@
     if (state.route.view === "table") {
       primeTableArrivalUi();
     } else {
-      clearFilterHintTimer();
+      clearFilterHintTimers();
     }
 
     render();
@@ -406,6 +406,10 @@
   }
 
   function handleDocumentClick(event) {
+    if (event.target.closest(".shell-top")) {
+      return;
+    }
+
     if (!event.target.closest("[data-search-root]")) {
       if (state.suggestions.length) {
         state.suggestions = [];
@@ -1411,7 +1415,13 @@
   function bindEvents() {
     const backHome = document.getElementById("backHome");
     if (backHome) {
-      backHome.addEventListener("click", handleHomeClick);
+      const handleBackHome = (event) => {
+        event.stopPropagation();
+        handleHomeClick();
+      };
+
+      backHome.addEventListener("pointerdown", handleBackHome);
+      backHome.addEventListener("click", handleBackHome);
     }
 
     document.querySelectorAll("[data-global-search]").forEach((input) => {
