@@ -244,7 +244,18 @@ That means:
 - only valid combinations are shown
 - impossible combinations are not available in dropdowns
 
-The current filter UI uses custom in-app dropdown menus instead of native browser `select` popups so the menus stay visually contained inside the dashboard card on mobile.
+The current filter UI on the table page uses a floating filter action button instead of always-visible inline controls.
+
+Clicking that button opens a popup with:
+
+- only the filters relevant to the current table context
+- typed search within each filter field
+- multi-select results
+- selected values shown as removable chips
+- explicit `Apply Filters`
+- `Clear Filters`
+
+The popup uses staged draft selections, so table results only change after `Apply Filters` is clicked.
 
 ### Geography layer
 
@@ -284,6 +295,12 @@ The current table shows:
   - `Previous Price Update At`
 
 The table does not show `report_date` as a standalone column.
+
+The table-screen UI also currently uses:
+
+- tighter mobile padding than the earlier prototype
+- only locked context chips at the top of the table view, with no duplicate black heading text
+- a top-left `Home` button beside the language toggle area
 
 For each row, the price cells also show the absolute change from the previous comparable update for the exact:
 
@@ -369,6 +386,8 @@ Implemented and working:
 - locked context headings
 - cascading filters
 - custom filter dropdown menus contained within the card on mobile
+- floating filter action button on the table screen
+- popup-based staged multi-select filters with typed search, removable chips, explicit apply, and clear actions
 - latest-row-only table
 - merged `Arrivals And Units` column
 - table price deltas against the previous comparable update
@@ -383,6 +402,7 @@ Implemented and working:
 - district-scoped market pins rendered inside the selected district
 - market pin click -> market table route
 - mobile-friendly stacked layout for home and table pages
+- tighter mobile padding on cards and controls for the table screen
 - bounded table container with horizontal and vertical scrolling
 - sticky header row inside the scrolling table container
 - scroll position preserved when selecting a different chart point

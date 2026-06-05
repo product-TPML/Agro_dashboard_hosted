@@ -1,6 +1,8 @@
 (function() {
   const app = document.getElementById("app");
   const LOCALE_STORAGE_KEY = "commodity-dashboard-locale";
+  const FILTER_HINT_DURATION_MS = 5000;
+  const FILTER_HINT_COLLAPSE_MS = 320;
 
   const state = {
     route: parseRoute(),
@@ -10,7 +12,13 @@
     allRows: [],
     baseRows: [],
     filters: {},
-    openFilter: null,
+    filterDrafts: {},
+    filterSearches: {},
+    pendingFilterSelection: null,
+    activeFilterField: "",
+    isFilterModalOpen: false,
+    showFilterHint: false,
+    shouldScrollTableIntoView: false,
     activeChartDate: null,
     expandedRowKey: null,
     searchToken: 0,
@@ -31,6 +39,9 @@
     mapViewBox: null,
     activeMapDistrictSlug: "",
   };
+
+  let filterHintTimer = null;
+  let filterHintFinalizeTimer = null;
 
   const MAP_DISTRICT_COLORS = [
     "#d85f52",
@@ -60,10 +71,15 @@
 
   document.addEventListener("click", handleDocumentClick);
   window.addEventListener("popstate", handlePopState);
+  setupVisualViewportTracking();
 
   boot();
 
   async function boot() {
+    if (state.route.view === "table") {
+      primeTableArrivalUi();
+    }
+
     render();
 
     await Promise.all([
@@ -193,10 +209,22 @@
     state.context = null;
     state.baseRows = [];
     state.filters = {};
-    state.openFilter = null;
+    state.filterDrafts = {};
+    state.filterSearches = {};
+    state.pendingFilterSelection = null;
+    state.activeFilterField = "";
+    state.isFilterModalOpen = false;
+    state.showFilterHint = false;
+    state.shouldScrollTableIntoView = false;
     state.activeChartDate = null;
     state.expandedRowKey = null;
     state.suggestions = [];
+    if (route.view === "table") {
+      primeTableArrivalUi();
+    } else {
+      clearFilterHintTimer();
+    }
+
     render();
     if (route.view === "table") {
       loadContext();
@@ -208,10 +236,22 @@
     state.context = null;
     state.baseRows = [];
     state.filters = {};
-    state.openFilter = null;
+    state.filterDrafts = {};
+    state.filterSearches = {};
+    state.pendingFilterSelection = null;
+    state.activeFilterField = "";
+    state.isFilterModalOpen = false;
+    state.showFilterHint = false;
+    state.shouldScrollTableIntoView = false;
     state.activeChartDate = null;
     state.expandedRowKey = null;
     state.suggestions = [];
+    if (state.route.view === "table") {
+      primeTableArrivalUi();
+    } else {
+      clearFilterHintTimer();
+    }
+
     render();
     if (state.route.view === "table") {
       loadContext();
@@ -255,7 +295,11 @@
       state.context = derived.context;
       state.baseRows = derived.rows;
       state.filters = buildInitialFilters(derived.context.filters);
-      state.openFilter = null;
+      state.filterDrafts = cloneFilters(state.filters);
+      state.filterSearches = buildInitialFilterSearches(derived.context.filters);
+      state.pendingFilterSelection = null;
+      state.activeFilterField = "";
+      state.isFilterModalOpen = false;
       state.activeChartDate = null;
       state.expandedRowKey = null;
     } catch (error) {
@@ -266,7 +310,11 @@
       };
       state.baseRows = [];
       state.filters = {};
-      state.openFilter = null;
+      state.filterDrafts = {};
+      state.filterSearches = {};
+      state.pendingFilterSelection = null;
+      state.activeFilterField = "";
+      state.isFilterModalOpen = false;
       state.activeChartDate = null;
     }
     render();
@@ -275,7 +323,23 @@
   function buildInitialFilters(filterNames) {
     const next = {};
     filterNames.forEach((name) => {
+      next[name] = [];
+    });
+    return next;
+  }
+
+  function buildInitialFilterSearches(filterNames) {
+    const next = {};
+    filterNames.forEach((name) => {
       next[name] = "";
+    });
+    return next;
+  }
+
+  function cloneFilters(filters) {
+    const next = {};
+    Object.entries(filters).forEach(([key, values]) => {
+      next[key] = [...values];
     });
     return next;
   }
@@ -347,13 +411,6 @@
         state.suggestions = [];
         render();
         return;
-      }
-    }
-
-    if (!event.target.closest("[data-filter-root]")) {
-      if (state.openFilter) {
-        state.openFilter = null;
-        render();
       }
     }
   }
@@ -432,26 +489,80 @@
     render();
   }
 
-  function handleFilterChange(name, value) {
-    state.filters[name] = value;
-    state.openFilter = null;
+  function openFilterModal() {
+    state.filterDrafts = cloneFilters(state.filters);
+    state.filterSearches = buildInitialFilterSearches(state.context ? state.context.filters : []);
+    state.pendingFilterSelection = null;
+    state.activeFilterField = "";
+    state.isFilterModalOpen = true;
+    render();
+  }
+
+  function closeFilterModal() {
+    state.filterDrafts = cloneFilters(state.filters);
+    state.filterSearches = buildInitialFilterSearches(state.context ? state.context.filters : []);
+    state.pendingFilterSelection = null;
+    state.activeFilterField = "";
+    state.isFilterModalOpen = false;
+    render();
+  }
+
+  function updateFilterSearch(name, value, selectionStart, selectionEnd) {
+    state.activeFilterField = name;
+    state.filterSearches[name] = value;
+    state.pendingFilterSelection = {
+      hadFocus: true,
+      field: name,
+      selectionStart,
+      selectionEnd,
+    };
+    render();
+  }
+
+  function activateFilterField(name) {
+    if (state.activeFilterField === name) {
+      return;
+    }
+    state.activeFilterField = name;
+    render();
+  }
+
+  function toggleDraftFilterValue(name, value) {
+    const selected = state.filterDrafts[name] || [];
+    if (selected.includes(value)) {
+      state.filterDrafts[name] = selected.filter((entry) => entry !== value);
+    } else {
+      state.filterDrafts[name] = [...selected, value];
+    }
+    render();
+  }
+
+  function removeDraftFilterValue(name, value) {
+    state.filterDrafts[name] = (state.filterDrafts[name] || []).filter((entry) => entry !== value);
+    render();
+  }
+
+  function applyFilterDrafts() {
+    state.filters = cloneFilters(state.filterDrafts);
+    state.pendingFilterSelection = null;
+    state.activeFilterField = "";
+    state.isFilterModalOpen = false;
     state.activeChartDate = null;
     state.expandedRowKey = null;
     render();
   }
 
-  function handleClearFilters() {
-    Object.keys(state.filters).forEach((name) => {
-      state.filters[name] = "";
+  function clearFilterDrafts() {
+    Object.keys(state.filterDrafts).forEach((name) => {
+      state.filterDrafts[name] = [];
+      state.filterSearches[name] = "";
     });
-    state.openFilter = null;
+    state.filters = cloneFilters(state.filterDrafts);
+    state.pendingFilterSelection = null;
+    state.activeFilterField = "";
+    state.isFilterModalOpen = false;
     state.activeChartDate = null;
     state.expandedRowKey = null;
-    render();
-  }
-
-  function toggleFilterMenu(name) {
-    state.openFilter = state.openFilter === name ? null : name;
     render();
   }
 
@@ -463,7 +574,7 @@
   function getRowsForCurrentView() {
     const filteredRows = state.baseRows.filter((row) => {
       return Object.entries(state.filters).every(([key, value]) => {
-        return !value || row[key] === value;
+        return !value.length || value.includes(row[key]);
       });
     });
 
@@ -506,16 +617,29 @@
     ].join("|");
   }
 
-  function getFilterOptions(field) {
+  function getFilterOptions(field, sourceFilters = state.filters) {
     const rows = state.baseRows.filter((row) => {
-      return Object.entries(state.filters).every(([key, value]) => {
+      return Object.entries(sourceFilters).every(([key, value]) => {
         if (key === field) {
           return true;
         }
-        return !value || row[key] === value;
+        return !value.length || value.includes(row[key]);
       });
     });
     return [...new Set(rows.map((row) => row[field]))].sort((left, right) => left.localeCompare(right));
+  }
+
+  function getDraftFilterOptions(field, query) {
+    const options = getFilterOptions(field, state.filterDrafts);
+    const normalizedQuery = normalizeSearchText(query);
+    if (!normalizedQuery) {
+      return options;
+    }
+
+    return options.filter((value) => {
+      return normalizeSearchText(translateEntity(field, value)).includes(normalizedQuery)
+        || normalizeSearchText(value).includes(normalizedQuery);
+    });
   }
 
   function getHistoryRows(selectedRow) {
@@ -536,22 +660,6 @@
       .sort((left, right) => left.reportDate.localeCompare(right.reportDate));
   }
 
-  function formatHeading() {
-    if (!state.context) {
-      return "";
-    }
-    if (state.context.type === "commodity") {
-      return translateEntity("commodity", state.context.locked.commodity);
-    }
-    if (state.context.type === "market") {
-      return translateEntity("market", state.context.locked.market);
-    }
-    if (state.context.type === "variety") {
-      return `${translateEntity("commodity", state.context.locked.commodity)} / ${translateEntity("variety", state.context.locked.variety)}`;
-    }
-    return state.context.heading;
-  }
-
   function formatLockedHeadings() {
     if (!state.context) {
       return "";
@@ -563,13 +671,14 @@
 
   function render() {
     const searchInputState = captureSearchInputState();
+    const filterInputState = captureFilterInputState();
     const scrollState = captureScrollState();
     const rows = getRowsForCurrentView();
 
     app.innerHTML = `
       <div class="shell">
         <div class="shell-top">
-          ${renderLocaleToggle()}
+          ${renderTopBar()}
         </div>
         <main>
           <section class="view ${state.route.view === "home" ? "active" : ""}" id="homeView">
@@ -604,14 +713,12 @@
               <div class="table-head">
                 <div>
                   <p class="search-label">Table View</p>
-                  <h2>${escapeHtml(formatHeading()) || "Loading..."}</h2>
                   <div class="locked-headings">${formatLockedHeadings()}</div>
                   <p>Use the filters to narrow the list. Click any row to view the recent price trend for that exact commodity entry.</p>
                 </div>
-                <button type="button" class="back-button" id="backHome">Home</button>
               </div>
 
-              ${renderFilters()}
+              ${renderFilterLauncher()}
 
               <div class="table-wrap" data-preserve-scroll-id="table-wrap">
                 ${renderTable(rows)}
@@ -620,17 +727,54 @@
             </div>
           </section>
         </main>
+        ${renderFilterModal()}
       </div>
     `;
 
     bindEvents();
     restoreSearchInputState(searchInputState);
+    restoreFilterInputState(filterInputState);
     restoreScrollState(scrollState);
+    runPostRenderEffects();
   }
 
   function captureSearchInputState() {
+    return captureFocusedInputState("[data-global-search]");
+  }
+
+  function restoreSearchInputState(snapshot) {
+    restoreFocusedInputState(".view.active [data-global-search]", snapshot);
+  }
+
+  function captureFilterInputState() {
+    if (state.pendingFilterSelection) {
+      const snapshot = { ...state.pendingFilterSelection };
+      state.pendingFilterSelection = null;
+      return snapshot;
+    }
+
+    const snapshot = captureFocusedInputState("[data-filter-search]");
+    if (!snapshot) {
+      return null;
+    }
+
+    return {
+      ...snapshot,
+      field: document.activeElement.dataset.filterSearch || "",
+    };
+  }
+
+  function restoreFilterInputState(snapshot) {
+    if (!snapshot || !snapshot.field) {
+      return;
+    }
+
+    restoreFocusedInputState(`[data-filter-search="${snapshot.field}"]`, snapshot);
+  }
+
+  function captureFocusedInputState(selector) {
     const input = document.activeElement;
-    if (!input || !input.matches("[data-global-search]")) {
+    if (!input || !input.matches(selector)) {
       return null;
     }
 
@@ -641,12 +785,12 @@
     };
   }
 
-  function restoreSearchInputState(snapshot) {
+  function restoreFocusedInputState(selector, snapshot) {
     if (!snapshot || !snapshot.hadFocus) {
       return;
     }
 
-    const input = document.querySelector(".view.active [data-global-search]");
+    const input = document.querySelector(selector);
     if (!input) {
       return;
     }
@@ -659,6 +803,8 @@
 
   function captureScrollState() {
     const tableWrap = document.querySelector("[data-preserve-scroll-id='table-wrap']");
+    const filterModalBody = document.querySelector("[data-preserve-scroll-id='filter-modal-body']");
+    const filterResults = [...document.querySelectorAll("[data-preserve-scroll-id='filter-search-results']")];
     return {
       windowX: window.scrollX,
       windowY: window.scrollY,
@@ -666,6 +812,13 @@
         scrollLeft: tableWrap.scrollLeft,
         scrollTop: tableWrap.scrollTop,
       } : null,
+      filterModalBody: filterModalBody ? {
+        scrollTop: filterModalBody.scrollTop,
+      } : null,
+      filterResults: filterResults.map((node) => ({
+        field: node.dataset.filterField || "",
+        scrollTop: node.scrollTop,
+      })),
     };
   }
 
@@ -682,11 +835,34 @@
 
     const tableWrap = document.querySelector("[data-preserve-scroll-id='table-wrap']");
     if (!tableWrap) {
+      if (snapshot.filterModalBody || (snapshot.filterResults && snapshot.filterResults.length)) {
+        restoreFilterScrollState(snapshot);
+      }
       return;
     }
 
     tableWrap.scrollLeft = snapshot.tableWrap.scrollLeft;
     tableWrap.scrollTop = snapshot.tableWrap.scrollTop;
+    restoreFilterScrollState(snapshot);
+  }
+
+  function restoreFilterScrollState(snapshot) {
+    if (snapshot.filterModalBody) {
+      const filterModalBody = document.querySelector("[data-preserve-scroll-id='filter-modal-body']");
+      if (filterModalBody) {
+        filterModalBody.scrollTop = snapshot.filterModalBody.scrollTop;
+      }
+    }
+
+    (snapshot.filterResults || []).forEach((entry) => {
+      if (!entry.field) {
+        return;
+      }
+      const node = document.querySelector(`[data-preserve-scroll-id='filter-search-results'][data-filter-field="${entry.field}"]`);
+      if (node) {
+        node.scrollTop = entry.scrollTop;
+      }
+    });
   }
 
   function renderSearchPanel() {
@@ -714,6 +890,17 @@
       <div class="locale-toggle" role="group" aria-label="Language">
         <button type="button" class="locale-toggle-button ${state.locale === "en" ? "is-active" : ""}" data-locale-toggle="en">English</button>
         <button type="button" class="locale-toggle-button ${state.locale === "kn" ? "is-active" : ""}" data-locale-toggle="kn">Kannada</button>
+      </div>
+    `;
+  }
+
+  function renderTopBar() {
+    return `
+      <div class="shell-top-inner">
+        <div class="shell-top-left">
+          ${state.route.view === "table" ? `<button type="button" class="back-button shell-home-button" id="backHome">Home</button>` : ""}
+        </div>
+        ${renderLocaleToggle()}
       </div>
     `;
   }
@@ -800,53 +987,89 @@
     return "Opens the variety table";
   }
 
-  function renderFilters() {
-    if (!state.context) {
-      return `<p class="muted">Loading table context...</p>`;
+  function renderFilterLauncher() {
+    if (!state.context || !state.context.filters.length) {
+      return "";
     }
 
-    const filterMarkup = state.context.filters.map((field) => {
-      const options = getFilterOptions(field);
-      return `
-        <div class="filter-group" data-filter-root>
-          <label>${capitalize(field)} filter</label>
-          <button
-            type="button"
-            class="filter-trigger"
-            data-filter-toggle="${field}"
-            aria-expanded="${state.openFilter === field ? "true" : "false"}"
-          >
-            <span>${escapeHtml(state.filters[field] ? translateEntity(field, state.filters[field]) : getAllLabel(field))}</span>
-            <span class="filter-caret">${state.openFilter === field ? "˄" : "˅"}</span>
-          </button>
-          <div class="filter-menu ${state.openFilter === field ? "is-open" : ""}">
-            <button
-              type="button"
-              class="filter-option ${state.filters[field] === "" ? "is-selected" : ""}"
-              data-filter-option="${field}"
-              data-filter-value=""
-            >
-              ${escapeHtml(getAllLabel(field))}
-            </button>
-            ${options.map((value) => `
-              <button
-                type="button"
-                class="filter-option ${state.filters[field] === value ? "is-selected" : ""}"
-                data-filter-option="${field}"
-                data-filter-value="${escapeAttribute(value)}"
-              >
-                ${escapeHtml(translateEntity(field, value))}
-              </button>
-            `).join("")}
-          </div>
-        </div>
-      `;
-    }).join("");
+    return `
+      <button type="button" class="filter-fab ${state.showFilterHint ? "is-expanded is-highlighted" : ""}" data-open-filter-modal="true" aria-label="Open filters">
+        <span class="filter-fab-icon">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 6h16l-6 7v5l-4 2v-7z" fill="currentColor"></path>
+          </svg>
+        </span>
+        <span class="filter-fab-label">Use filters here</span>
+      </button>
+    `;
+  }
+
+  function renderFilterModal() {
+    if (!state.context || !state.context.filters.length || !state.isFilterModalOpen) {
+      return "";
+    }
 
     return `
-      <div class="filters">
-        ${filterMarkup}
-        <button type="button" class="clear-button" id="clearFilters">Clear Filters</button>
+      <div class="filter-modal-backdrop" data-close-filter-modal="backdrop">
+        <section class="filter-modal panel" role="dialog" aria-modal="true" aria-label="Filters">
+          <div class="filter-modal-head">
+            <div>
+              <p class="search-label">Filters</p>
+              <h3>Refine table results</h3>
+            </div>
+            <button type="button" class="filter-modal-close" data-close-filter-modal="button" aria-label="Close filters">&times;</button>
+          </div>
+          <div class="filter-modal-body" data-preserve-scroll-id="filter-modal-body">
+            ${state.context.filters.map((field) => renderFilterField(field)).join("")}
+          </div>
+          <div class="filter-modal-actions">
+            <button type="button" class="inline-button filter-clear-inline" data-clear-filter-drafts="true">Clear Filters</button>
+            <button type="button" class="clear-button filter-apply-button" data-apply-filter-drafts="true">Apply Filters</button>
+          </div>
+        </section>
+      </div>
+    `;
+  }
+
+  function renderFilterField(field) {
+    const selected = state.filterDrafts[field] || [];
+    const query = state.filterSearches[field] || "";
+    const options = getDraftFilterOptions(field, query);
+    const isOpen = state.activeFilterField === field;
+
+    return `
+      <div class="filter-modal-group">
+        <label>${capitalize(field)} filter</label>
+        <div class="filter-multiselect">
+          <div class="filter-chip-row">
+            ${selected.length ? selected.map((value) => `
+              <span class="filter-chip">
+                <span>${escapeHtml(translateEntity(field, value))}</span>
+                <button type="button" class="filter-chip-remove" data-remove-draft-filter="${field}" data-remove-draft-value="${escapeAttribute(value)}" aria-label="Remove ${escapeAttribute(value)}">&times;</button>
+              </span>
+            `).join("") : `<span class="filter-chip-placeholder">${escapeHtml(getAllLabel(field))}</span>`}
+          </div>
+          <input
+            type="text"
+            class="filter-search-input"
+            placeholder="Type to search"
+            value="${escapeAttribute(query)}"
+            data-filter-search="${field}"
+          >
+          <div class="filter-search-results ${isOpen ? "is-open" : ""}" data-preserve-scroll-id="filter-search-results" data-filter-field="${field}">
+            ${isOpen ? (options.length ? options.map((value) => `
+              <button
+                type="button"
+                class="filter-search-option ${selected.includes(value) ? "is-selected" : ""}"
+                data-toggle-draft-filter="${field}"
+                data-toggle-draft-value="${escapeAttribute(value)}"
+              >
+                <span>${escapeHtml(translateEntity(field, value))}</span>
+                ${selected.includes(value) ? `<span class="filter-option-check">&#10003;</span>` : ""}
+              </button>
+            `).join("") : `<p class="muted filter-empty-note">No matching options.</p>`) : ""}
+          </div>
+        </div>
       </div>
     `;
   }
@@ -886,8 +1109,7 @@
       { key: "maxPrice", label: "Max Price (Rs.)" },
       { key: "minPrice", label: "Min Price (Rs.)" },
       { key: "modalPrice", label: "Modal Price (Rs.)" },
-      { key: "latestPriceUpdateAt", label: "Latest Price Update At" },
-      { key: "previousPriceUpdateAt", label: "Previous Price Update At" },
+      { key: "priceUpdates", label: "Price Updates" },
     ];
 
     if (!state.context) {
@@ -936,11 +1158,21 @@
         </td>
       `;
     }
-    if (column.key === "latestPriceUpdateAt") {
-      return `<td>${escapeHtml(formatDateFull(row.reportDate))}</td>`;
-    }
-    if (column.key === "previousPriceUpdateAt") {
-      return `<td>${escapeHtml(previousRow ? formatDateFull(previousRow.reportDate) : "-")}</td>`;
+    if (column.key === "priceUpdates") {
+      return `
+        <td>
+          <div class="date-stack">
+            <div class="date-stack-item">
+              <span class="date-stack-label">Latest</span>
+              <span>${escapeHtml(formatDateFull(row.reportDate))}</span>
+            </div>
+            <div class="date-stack-item">
+              <span class="date-stack-label">Previous</span>
+              <span>${escapeHtml(previousRow ? formatDateFull(previousRow.reportDate) : "-")}</span>
+            </div>
+          </div>
+        </td>
+      `;
     }
     if (column.key === "commodity" || column.key === "market" || column.key === "variety") {
       return `<td>${escapeHtml(translateEntity(column.key, String(value)))}</td>`;
@@ -949,7 +1181,7 @@
   }
 
   function needsPreviousRow(columnKey) {
-    return columnKey.endsWith("Price") || columnKey === "previousPriceUpdateAt";
+    return columnKey.endsWith("Price") || columnKey === "priceUpdates";
   }
 
   function getPreviousComparableRow(row) {
@@ -983,7 +1215,7 @@
       return `
         <span class="price-delta price-delta-flat">
           <span class="delta-flat">-</span>
-          <span>(0)</span>
+          <span>0</span>
         </span>
       `;
     }
@@ -992,7 +1224,7 @@
     return `
       <span class="price-delta ${isGain ? "price-delta-gain" : "price-delta-loss"}">
         ${renderDeltaIcon(isGain)}
-        <span>(${isGain ? "+" : "-"}${formatCurrency(Math.abs(delta))})</span>
+        <span>${isGain ? "+" : "-"}${formatCurrency(Math.abs(delta))}</span>
       </span>
     `;
   }
@@ -1177,11 +1409,6 @@
   }
 
   function bindEvents() {
-    const homeLink = document.getElementById("homeLink");
-    if (homeLink) {
-      homeLink.addEventListener("click", handleHomeClick);
-    }
-
     const backHome = document.getElementById("backHome");
     if (backHome) {
       backHome.addEventListener("click", handleHomeClick);
@@ -1206,24 +1433,55 @@
       });
     });
 
-    document.querySelectorAll("[data-filter-toggle]").forEach((button) => {
-      button.addEventListener("click", (event) => {
-        event.stopPropagation();
-        toggleFilterMenu(button.dataset.filterToggle);
+    document.querySelectorAll("[data-open-filter-modal]").forEach((button) => {
+      button.addEventListener("click", openFilterModal);
+    });
+
+    document.querySelectorAll("[data-close-filter-modal]").forEach((node) => {
+      node.addEventListener("click", (event) => {
+        const mode = node.dataset.closeFilterModal;
+        if (mode === "backdrop" && event.target !== node) {
+          return;
+        }
+        closeFilterModal();
       });
     });
 
-    document.querySelectorAll("[data-filter-option]").forEach((button) => {
-      button.addEventListener("click", (event) => {
-        event.stopPropagation();
-        handleFilterChange(button.dataset.filterOption, button.dataset.filterValue);
+    document.querySelectorAll("[data-filter-search]").forEach((input) => {
+      input.addEventListener("focus", () => {
+        activateFilterField(input.dataset.filterSearch);
+        scheduleFilterFieldIntoView(input);
+      });
+      input.addEventListener("input", () => {
+        updateFilterSearch(
+          input.dataset.filterSearch,
+          input.value,
+          input.selectionStart,
+          input.selectionEnd
+        );
       });
     });
 
-    const clearFilters = document.getElementById("clearFilters");
-    if (clearFilters) {
-      clearFilters.addEventListener("click", handleClearFilters);
-    }
+    document.querySelectorAll("[data-toggle-draft-filter]").forEach((button) => {
+      button.addEventListener("click", () => {
+        toggleDraftFilterValue(button.dataset.toggleDraftFilter, button.dataset.toggleDraftValue);
+      });
+    });
+
+    document.querySelectorAll("[data-remove-draft-filter]").forEach((button) => {
+      button.addEventListener("click", (event) => {
+        event.stopPropagation();
+        removeDraftFilterValue(button.dataset.removeDraftFilter, button.dataset.removeDraftValue);
+      });
+    });
+
+    document.querySelectorAll("[data-apply-filter-drafts]").forEach((button) => {
+      button.addEventListener("click", applyFilterDrafts);
+    });
+
+    document.querySelectorAll("[data-clear-filter-drafts]").forEach((button) => {
+      button.addEventListener("click", clearFilterDrafts);
+    });
 
     document.querySelectorAll("[data-row-key]").forEach((row) => {
       row.addEventListener("click", () => {
@@ -1290,6 +1548,142 @@
     });
 
     wireMapInteractions();
+  }
+
+  function setupVisualViewportTracking() {
+    updateVisualViewportHeight();
+
+    if (!window.visualViewport) {
+      window.addEventListener("resize", () => {
+        updateVisualViewportHeight();
+        updateTableWrapHeight();
+      });
+      return;
+    }
+
+    window.visualViewport.addEventListener("resize", handleVisualViewportChange);
+    window.visualViewport.addEventListener("scroll", handleVisualViewportChange);
+    window.addEventListener("resize", () => {
+      updateVisualViewportHeight();
+      updateTableWrapHeight();
+    });
+  }
+
+  function handleVisualViewportChange() {
+    updateVisualViewportHeight();
+    updateTableWrapHeight();
+
+    if (!state.isFilterModalOpen) {
+      return;
+    }
+
+    const activeInput = document.activeElement;
+    if (activeInput && activeInput.matches("[data-filter-search]")) {
+      scheduleFilterFieldIntoView(activeInput);
+    }
+  }
+
+  function updateVisualViewportHeight() {
+    const height = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+    document.documentElement.style.setProperty("--visual-viewport-height", `${Math.round(height)}px`);
+  }
+
+  function scheduleFilterFieldIntoView(input) {
+    if (!input) {
+      return;
+    }
+
+    window.setTimeout(() => {
+      const field = input.closest(".filter-modal-group");
+      if (field) {
+        field.scrollIntoView({ block: "nearest", inline: "nearest" });
+      }
+    }, 80);
+  }
+
+  function primeTableArrivalUi() {
+    state.shouldScrollTableIntoView = true;
+    state.showFilterHint = true;
+    clearFilterHintTimers();
+  }
+
+  function clearFilterHintTimers() {
+    if (filterHintTimer !== null) {
+      window.clearTimeout(filterHintTimer);
+      filterHintTimer = null;
+    }
+    if (filterHintFinalizeTimer !== null) {
+      window.clearTimeout(filterHintFinalizeTimer);
+      filterHintFinalizeTimer = null;
+    }
+  }
+
+  function runPostRenderEffects() {
+    updateTableWrapHeight();
+    syncFilterHintAnimation();
+
+    if (state.shouldScrollTableIntoView && state.route.view === "table" && state.context) {
+      const tableWrap = document.querySelector("[data-preserve-scroll-id='table-wrap']");
+      if (tableWrap) {
+        tableWrap.scrollIntoView({ block: "start" });
+        state.shouldScrollTableIntoView = false;
+        updateTableWrapHeight();
+      }
+    }
+  }
+
+  function syncFilterHintAnimation() {
+    const button = document.querySelector("[data-open-filter-modal]");
+    if (!button) {
+      clearFilterHintTimers();
+      return;
+    }
+
+    if (!state.showFilterHint) {
+      button.classList.remove("is-expanded", "is-highlighted", "is-collapsing");
+      clearFilterHintTimers();
+      return;
+    }
+
+    button.classList.add("is-expanded", "is-highlighted");
+    button.classList.remove("is-collapsing");
+
+    if (filterHintTimer !== null || filterHintFinalizeTimer !== null) {
+      return;
+    }
+
+    filterHintTimer = window.setTimeout(() => {
+      const liveButton = document.querySelector("[data-open-filter-modal]");
+      if (liveButton) {
+        liveButton.classList.remove("is-highlighted");
+        liveButton.classList.add("is-collapsing");
+        liveButton.classList.remove("is-expanded");
+      }
+
+      filterHintTimer = null;
+      filterHintFinalizeTimer = window.setTimeout(() => {
+        state.showFilterHint = false;
+        filterHintFinalizeTimer = null;
+        render();
+      }, FILTER_HINT_COLLAPSE_MS);
+    }, FILTER_HINT_DURATION_MS);
+  }
+
+  function updateTableWrapHeight() {
+    const tableWrap = document.querySelector("[data-preserve-scroll-id='table-wrap']");
+    if (!tableWrap) {
+      return;
+    }
+
+    if (window.innerWidth > 720) {
+      tableWrap.style.removeProperty("--table-wrap-height");
+      return;
+    }
+
+    const viewportHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+    const top = tableWrap.getBoundingClientRect().top;
+    const available = Math.max(240, Math.floor(viewportHeight - top - 12));
+    tableWrap.style.setProperty("--table-wrap-height", `${available}px`);
   }
 
   function wireMapInteractions() {
@@ -2176,3 +2570,4 @@
     return escapeHtml(value);
   }
 })();
+
