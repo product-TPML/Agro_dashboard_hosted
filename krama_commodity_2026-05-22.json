@@ -1,0 +1,350 @@
+{
+  "heading": "MARKETWISE REPORT FOR VARIOUS COMMODITIES AS ON 22/05/2026",
+  "commodities": [
+    {
+      "name": "Maize",
+      "data": [
+        {
+          "Market": "HUNGUND",
+          "Variety": "Local",
+          "Grade": "Medium",
+          "Arrivals": "511",
+          "Units": "Quintal",
+          "Min (Rs.)": "1900",
+          "Max (Rs.)": "2000",
+          "Modal (Rs.)": "1900"
+        }
+      ]
+    },
+    {
+      "name": "Paddy",
+      "data": [
+        {
+          "Market": "DODDABALLAPUR",
+          "Variety": "Paddy 1001",
+          "Grade": "Medium",
+          "Arrivals": "161",
+          "Units": "Quintal",
+          "Min (Rs.)": "2850",
+          "Max (Rs.)": "2850",
+          "Modal (Rs.)": "2850"
+        }
+      ]
+    },
+    {
+      "name": "Rice",
+      "data": [
+        {
+          "Market": "DODDABALLAPUR",
+          "Variety": "Other",
+          "Grade": "Average",
+          "Arrivals": "198",
+          "Units": "Quintal",
+          "Min (Rs.)": "3450",
+          "Max (Rs.)": "3980",
+          "Modal (Rs.)": "3450"
+        }
+      ]
+    },
+    {
+      "name": "Coconut (Per 1000)",
+      "data": [
+        {
+          "Market": "DODDABALLAPUR",
+          "Variety": "Coconut",
+          "Grade": "Medium",
+          "Arrivals": "37840",
+          "Units": "Numbers",
+          "Min (Rs.)": "14000",
+          "Max (Rs.)": "25000",
+          "Modal (Rs.)": "18500"
+        }
+      ]
+    },
+    {
+      "name": "Bengalgram",
+      "data": [
+        {
+          "Market": "HUNGUND",
+          "Variety": "Jawari/Local",
+          "Grade": "Medium",
+          "Arrivals": "798",
+          "Units": "Quintal",
+          "Min (Rs.)": "5200",
+          "Max (Rs.)": "5200",
+          "Modal (Rs.)": "5200"
+        }
+      ]
+    },
+    {
+      "name": "Black Gramdal",
+      "data": [
+        {
+          "Market": "DODDABALLAPUR",
+          "Variety": "Black Gram Dal",
+          "Grade": "Medium",
+          "Arrivals": "21",
+          "Units": "Quintal",
+          "Min (Rs.)": "11600",
+          "Max (Rs.)": "11600",
+          "Modal (Rs.)": "11600"
+        }
+      ]
+    },
+    {
+      "name": "Tur Dal",
+      "data": [
+        {
+          "Market": "DODDABALLAPUR",
+          "Variety": "Tur Dal",
+          "Grade": "Medium",
+          "Arrivals": "100",
+          "Units": "Quintal",
+          "Min (Rs.)": "15281",
+          "Max (Rs.)": "15281",
+          "Modal (Rs.)": "15281"
+        }
+      ]
+    },
+    {
+      "name": "Banana Green",
+      "data": [
+        {
+          "Market": "DODDABALLAPUR",
+          "Variety": "Banana - Green (Balekai)",
+          "Grade": "Medium",
+          "Arrivals": "3",
+          "Units": "Quintal",
+          "Min (Rs.)": "4000",
+          "Max (Rs.)": "5000",
+          "Modal (Rs.)": "4500"
+        }
+      ]
+    },
+    {
+      "name": "Beans",
+      "data": [
+        {
+          "Market": "DODDABALLAPUR",
+          "Variety": "Beans (Whole)",
+          "Grade": "Medium",
+          "Arrivals": "2",
+          "Units": "Quintal",
+          "Min (Rs.)": "6000",
+          "Max (Rs.)": "9000",
+          "Modal (Rs.)": "7500"
+        }
+      ]
+    },
+    {
+      "name": "Beetroot",
+      "data": [
+        {
+          "Market": "DODDABALLAPUR",
+          "Variety": "Beetroot",
+          "Grade": "Medium",
+          "Arrivals": "2",
+          "Units": "Quintal",
+          "Min (Rs.)": "2500",
+          "Max (Rs.)": "3100",
+          "Modal (Rs.)": "2850"
+        }
+      ]
+    },
+    {
+      "name": "Bitter Gourd",
+      "data": [
+        {
+          "Market": "DODDABALLAPUR",
+          "Variety": "Bitter Gourd",
+          "Grade": "Medium",
+          "Arrivals": "2",
+          "Units": "Quintal",
+          "Min (Rs.)": "2500",
+          "Max (Rs.)": "3500",
+          "Modal (Rs.)": "3000"
+        }
+      ]
+    },
+    {
+      "name": "Brinjal",
+      "data": [
+        {
+          "Market": "DODDABALLAPUR",
+          "Variety": "Brinjal",
+          "Grade": "Medium",
+          "Arrivals": "3",
+          "Units": "Quintal",
+          "Min (Rs.)": "2000",
+          "Max (Rs.)": "2600",
+          "Modal (Rs.)": "2300"
+        }
+      ]
+    },
+    {
+      "name": "Capsicum",
+      "data": [
+        {
+          "Market": "DODDABALLAPUR",
+          "Variety": "Capsicum",
+          "Grade": "Medium",
+          "Arrivals": "2",
+          "Units": "Quintal",
+          "Min (Rs.)": "2500",
+          "Max (Rs.)": "3400",
+          "Modal (Rs.)": "3000"
+        }
+      ]
+    },
+    {
+      "name": "Carrot",
+      "data": [
+        {
+          "Market": "DODDABALLAPUR",
+          "Variety": "Others",
+          "Grade": "Medium",
+          "Arrivals": "3",
+          "Units": "Quintal",
+          "Min (Rs.)": "2500",
+          "Max (Rs.)": "3200",
+          "Modal (Rs.)": "2850"
+        }
+      ]
+    },
+    {
+      "name": "Cauliflower",
+      "data": [
+        {
+          "Market": "DODDABALLAPUR",
+          "Variety": "Cauliflower",
+          "Grade": "Medium",
+          "Arrivals": "2",
+          "Units": "Quintal",
+          "Min (Rs.)": "1000",
+          "Max (Rs.)": "1500",
+          "Modal (Rs.)": "1200"
+        }
+      ]
+    },
+    {
+      "name": "Cucumbar",
+      "data": [
+        {
+          "Market": "DODDABALLAPUR",
+          "Variety": "Cucumbar",
+          "Grade": "Medium",
+          "Arrivals": "12",
+          "Units": "Quintal",
+          "Min (Rs.)": "2000",
+          "Max (Rs.)": "2400",
+          "Modal (Rs.)": "2200"
+        }
+      ]
+    },
+    {
+      "name": "Green Chilly",
+      "data": [
+        {
+          "Market": "DODDABALLAPUR",
+          "Variety": "Green Chilly",
+          "Grade": "Medium",
+          "Arrivals": "3",
+          "Units": "Quintal",
+          "Min (Rs.)": "3500",
+          "Max (Rs.)": "4500",
+          "Modal (Rs.)": "4000"
+        }
+      ]
+    },
+    {
+      "name": "Green Ginger",
+      "data": [
+        {
+          "Market": "DODDABALLAPUR",
+          "Variety": "Green Ginger",
+          "Grade": "Medium",
+          "Arrivals": "2",
+          "Units": "Quintal",
+          "Min (Rs.)": "10000",
+          "Max (Rs.)": "14000",
+          "Modal (Rs.)": "12000"
+        }
+      ]
+    },
+    {
+      "name": "Knool Khol",
+      "data": [
+        {
+          "Market": "DODDABALLAPUR",
+          "Variety": "Knool Khol",
+          "Grade": "Medium",
+          "Arrivals": "4",
+          "Units": "Quintal",
+          "Min (Rs.)": "2000",
+          "Max (Rs.)": "3000",
+          "Modal (Rs.)": "2600"
+        }
+      ]
+    },
+    {
+      "name": "Ladies Finger",
+      "data": [
+        {
+          "Market": "DODDABALLAPUR",
+          "Variety": "Ladies Finger",
+          "Grade": "Medium",
+          "Arrivals": "3",
+          "Units": "Quintal",
+          "Min (Rs.)": "2200",
+          "Max (Rs.)": "3000",
+          "Modal (Rs.)": "2700"
+        }
+      ]
+    },
+    {
+      "name": "Onion",
+      "data": [
+        {
+          "Market": "DODDABALLAPUR",
+          "Variety": "Onion",
+          "Grade": "Medium",
+          "Arrivals": "20",
+          "Units": "Quintal",
+          "Min (Rs.)": "1800",
+          "Max (Rs.)": "2200",
+          "Modal (Rs.)": "2000"
+        }
+      ]
+    },
+    {
+      "name": "Potato",
+      "data": [
+        {
+          "Market": "DODDABALLAPUR",
+          "Variety": "Local",
+          "Grade": "Medium",
+          "Arrivals": "15",
+          "Units": "Quintal",
+          "Min (Rs.)": "2000",
+          "Max (Rs.)": "2400",
+          "Modal (Rs.)": "2200"
+        }
+      ]
+    },
+    {
+      "name": "Tomato",
+      "data": [
+        {
+          "Market": "DODDABALLAPUR",
+          "Variety": "Tomato",
+          "Grade": "Medium",
+          "Arrivals": "14",
+          "Units": "Quintal",
+          "Min (Rs.)": "3500",
+          "Max (Rs.)": "4500",
+          "Modal (Rs.)": "4000"
+        }
+      ]
+    }
+  ]
+}

@@ -19,9 +19,34 @@ npm run dashboard:local
 
 Open `http://127.0.0.1:3180`.
 
-## Important publishing note
+## GitHub Pages build
 
-The current dashboard is **not GitHub Pages-ready as-is**.
+This repo now supports a static Pages build.
+
+Build it with:
+
+```bash
+npm run build:pages
+```
+
+That command:
+
+- exports the current SQLite-backed dataset into static JSON
+- writes those files to `local-dashboard/public/data/`
+- copies the deployable site into `docs/`
+
+For GitHub Pages:
+
+1. run `npm run build:pages`
+2. commit the updated `docs/` folder
+3. in GitHub repo settings, enable Pages from:
+   - `Deploy from a branch`
+   - branch: `main`
+   - folder: `/docs`
+
+## Architecture note
+
+The original dashboard architecture was **not GitHub Pages-ready as-is**.
 
 Why:
 
@@ -31,10 +56,7 @@ Why:
   - SQLite reads
   - JSON API routes such as `/api/context`, `/api/map`, and `/api/search-index`
 
-So:
-
-- pushing this repo to GitHub is fine
-- hosting the current app on GitHub Pages requires a later static-export/refactor step
+That is why the Pages build converts the live local data source into static JSON before deployment.
 
 ## What should go to GitHub
 

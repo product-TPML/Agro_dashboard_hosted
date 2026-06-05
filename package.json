@@ -9,7 +9,8 @@
     "build:exe": "powershell -ExecutionPolicy Bypass -File scripts/build_krama_exe.ps1",
     "backfill:perishability": "node scripts/backfill_perishability.js",
     "build:static-db": "node scripts/build_static_db.js",
-    "dashboard:local": "node local-dashboard/server.js"
+    "dashboard:local": "node local-dashboard/server.js",
+    "build:pages": "node scripts/build_pages_site.js"
   },
   "keywords": [],
   "author": "",

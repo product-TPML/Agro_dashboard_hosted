@@ -7,6 +7,7 @@
     query: "",
     suggestions: [],
     context: null,
+    allRows: [],
     baseRows: [],
     filters: {},
     openFilter: null,
@@ -63,19 +64,27 @@
   boot();
 
   async function boot() {
-    loadTranslations();
-    loadSearchIndex();
-    loadMapSvg();
-    loadMapData();
     render();
+
+    await Promise.all([
+      loadTranslations(),
+      loadSearchIndex(),
+      loadMapSvg(),
+      loadMapData(),
+      loadObservations(),
+    ]);
+
     if (state.route.view === "table") {
-      await loadContext();
+      loadContext();
+      return;
     }
+
+    render();
   }
 
   async function loadMapSvg() {
     try {
-      const response = await fetch("/karnataka-geo.svg");
+      const response = await fetch("./karnataka-geo.svg");
       if (!response.ok) {
         throw new Error(`Map request failed: ${response.status}`);
       }
@@ -86,23 +95,21 @@
       state.mapSvgMarkup = "";
     }
 
-    render();
   }
 
   async function loadMapData() {
     try {
-      const payload = await fetchJson("/api/map");
+      const payload = await fetchJson("./data/map-data.json");
       state.mapDistricts = payload.districts || [];
     } catch (error) {
       state.mapDistricts = [];
     }
 
-    render();
   }
 
   async function loadTranslations() {
     try {
-      const payload = await fetchJson("/translations.json");
+      const payload = await fetchJson("./translations.json");
       state.translations = {
         commodities: payload.commodities || {},
         markets: payload.markets || {},
@@ -116,12 +123,11 @@
       };
     }
 
-    render();
   }
 
   async function loadSearchIndex() {
     try {
-      const payload = await fetchJson("/api/search-index");
+      const payload = await fetchJson("./data/search-index.json");
       state.searchIndex = {
         commodities: payload.commodities || [],
         markets: payload.markets || [],
@@ -137,7 +143,14 @@
 
     if (state.query.trim() && hasClientSearchIndex()) {
       state.suggestions = buildLocalizedSearchResults(state.query.trim());
-      render();
+    }
+  }
+
+  async function loadObservations() {
+    try {
+      state.allRows = await fetchJson("./data/observations.json");
+    } catch (error) {
+      state.allRows = [];
     }
   }
 
@@ -169,7 +182,8 @@
       }
     }
     const query = params.toString();
-    return query ? `/?${query}` : "/";
+    const basePath = window.location.pathname || "./";
+    return query ? `${basePath}?${query}` : basePath;
   }
 
   function navigate(route) {
@@ -229,33 +243,18 @@
       return;
     }
 
-    const payload = await fetchJson(`/api/search?q=${encodeURIComponent(query.trim())}`);
-    if (token !== state.searchToken) {
-      return;
-    }
-
-    state.suggestions = payload.results;
+    state.suggestions = [];
     render();
   }
 
   async function loadContext() {
     const route = state.route;
-    const params = new URLSearchParams({ type: route.type });
-    if (route.commodity) {
-      params.set("commodity", route.commodity);
-    }
-    if (route.market) {
-      params.set("market", route.market);
-    }
-    if (route.variety) {
-      params.set("variety", route.variety);
-    }
 
     try {
-      const payload = await fetchJson(`/api/context?${params.toString()}`);
-      state.context = payload.context;
-      state.baseRows = payload.rows;
-      state.filters = buildInitialFilters(payload.context.filters);
+      const derived = deriveContext(route);
+      state.context = derived.context;
+      state.baseRows = derived.rows;
+      state.filters = buildInitialFilters(derived.context.filters);
       state.openFilter = null;
       state.activeChartDate = null;
       state.expandedRowKey = null;
@@ -279,6 +278,67 @@
       next[name] = "";
     });
     return next;
+  }
+
+  function deriveContext(route) {
+    if (!state.allRows.length) {
+      throw new Error("Observation data not loaded.");
+    }
+
+    if (route.type === "commodity") {
+      if (!route.commodity) {
+        throw new Error("Missing commodity.");
+      }
+
+      return {
+        context: {
+          type: "commodity",
+          heading: route.commodity,
+          locked: { commodity: route.commodity },
+          filters: ["market", "variety"],
+          resultLabel: `${route.commodity} (Commodity)`,
+        },
+        rows: state.allRows.filter((row) => row.commodity === route.commodity),
+      };
+    }
+
+    if (route.type === "market") {
+      if (!route.market) {
+        throw new Error("Missing market.");
+      }
+
+      return {
+        context: {
+          type: "market",
+          heading: route.market,
+          locked: { market: route.market },
+          filters: ["commodity", "variety"],
+          resultLabel: `${route.market} (Market)`,
+        },
+        rows: state.allRows.filter((row) => row.market === route.market),
+      };
+    }
+
+    if (route.type === "variety") {
+      if (!route.commodity || !route.variety) {
+        throw new Error("Missing commodity or variety.");
+      }
+
+      return {
+        context: {
+          type: "variety",
+          heading: `${route.commodity} / ${route.variety}`,
+          locked: { commodity: route.commodity, variety: route.variety },
+          filters: ["market"],
+          resultLabel: `${route.variety} (${route.commodity})`,
+        },
+        rows: state.allRows.filter((row) => {
+          return row.commodity === route.commodity && row.variety === route.variety;
+        }),
+      };
+    }
+
+    throw new Error("Invalid context type.");
   }
 
   function handleDocumentClick(event) {
