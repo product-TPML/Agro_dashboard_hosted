@@ -3,6 +3,7 @@
   const LOCALE_STORAGE_KEY = "commodity-dashboard-locale";
   const FILTER_HINT_DURATION_MS = 5000;
   const FILTER_HINT_COLLAPSE_MS = 320;
+  const SEARCH_INPUT_DEBOUNCE_MS = 120;
   const PRICE_COLORS = {
     max: "#1E3A8A",
     min: "#C2410C",
@@ -43,10 +44,16 @@
     mapBaseViewBox: null,
     mapViewBox: null,
     activeMapDistrictSlug: "",
+    cachedVisibleRowsKey: "",
+    cachedVisibleRows: [],
+    cachedFilterOptions: {},
   };
 
   let filterHintTimer = null;
   let filterHintFinalizeTimer = null;
+  let searchInputTimer = null;
+  let filterSearchInputTimer = null;
+  let renderFrameId = null;
 
   const MAP_DISTRICT_COLORS = [
     "#d85f52",
@@ -173,6 +180,8 @@
     } catch (error) {
       state.allRows = [];
     }
+
+    invalidateDerivedDataCaches();
   }
 
   function parseRoute() {
@@ -224,13 +233,14 @@
     state.activeChartDate = null;
     state.expandedRowKey = null;
     state.suggestions = [];
+    invalidateDerivedDataCaches();
     if (route.view === "table") {
       primeTableArrivalUi();
     } else {
       clearFilterHintTimers();
     }
 
-    render();
+    scheduleRender();
     if (route.view === "table") {
       loadContext();
     }
@@ -251,13 +261,14 @@
     state.activeChartDate = null;
     state.expandedRowKey = null;
     state.suggestions = [];
+    invalidateDerivedDataCaches();
     if (state.route.view === "table") {
       primeTableArrivalUi();
     } else {
       clearFilterHintTimers();
     }
 
-    render();
+    scheduleRender();
     if (state.route.view === "table") {
       loadContext();
     }
@@ -272,10 +283,14 @@
   }
 
   async function search(query) {
+    if (query !== state.query) {
+      return;
+    }
+
     const token = ++state.searchToken;
     if (!query.trim()) {
       state.suggestions = [];
-      render();
+      scheduleRender();
       return;
     }
 
@@ -284,12 +299,12 @@
         return;
       }
       state.suggestions = buildLocalizedSearchResults(query.trim());
-      render();
+      scheduleRender();
       return;
     }
 
     state.suggestions = [];
-    render();
+    scheduleRender();
   }
 
   async function loadContext() {
@@ -307,6 +322,7 @@
       state.isFilterModalOpen = false;
       state.activeChartDate = null;
       state.expandedRowKey = null;
+      invalidateDerivedDataCaches();
     } catch (error) {
       state.context = {
         heading: "Unavailable",
@@ -321,8 +337,9 @@
       state.activeFilterField = "";
       state.isFilterModalOpen = false;
       state.activeChartDate = null;
+      invalidateDerivedDataCaches();
     }
-    render();
+    scheduleRender();
   }
 
   function buildInitialFilters(filterNames) {
@@ -426,7 +443,7 @@
 
   function handleSearchInput(event) {
     state.query = event.target.value;
-    search(state.query);
+    scheduleSearchInputWork(state.query);
   }
 
   function handleSuggestionSelect(result) {
@@ -470,7 +487,7 @@
 
     const scale = direction > 0 ? 0.82 : 1.18;
     state.mapViewBox = scaleMapViewBox(currentViewBox, scale);
-    render();
+    scheduleRender();
   }
 
   function resetMapViewport() {
@@ -495,7 +512,7 @@
 
     state.mapViewBox = constrainMapViewBox(nextViewBox);
     state.activeMapDistrictSlug = districtSlug || "";
-    render();
+    scheduleRender();
   }
 
   function openFilterModal() {
@@ -504,7 +521,7 @@
     state.pendingFilterSelection = null;
     state.activeFilterField = "";
     state.isFilterModalOpen = true;
-    render();
+    scheduleRender();
   }
 
   function closeFilterModal() {
@@ -513,7 +530,7 @@
     state.pendingFilterSelection = null;
     state.activeFilterField = "";
     state.isFilterModalOpen = false;
-    render();
+    scheduleRender();
   }
 
   function updateFilterSearch(name, value, selectionStart, selectionEnd) {
@@ -525,7 +542,7 @@
       selectionStart,
       selectionEnd,
     };
-    render();
+    scheduleFilterSearchRender();
   }
 
   function activateFilterField(name) {
@@ -533,7 +550,7 @@
       return;
     }
     state.activeFilterField = name;
-    render();
+    scheduleRender();
   }
 
   function toggleDraftFilterValue(name, value) {
@@ -543,22 +560,23 @@
     } else {
       state.filterDrafts[name] = [...selected, value];
     }
-    render();
+    scheduleRender();
   }
 
   function removeDraftFilterValue(name, value) {
     state.filterDrafts[name] = (state.filterDrafts[name] || []).filter((entry) => entry !== value);
-    render();
+    scheduleRender();
   }
 
   function applyFilterDrafts() {
     state.filters = cloneFilters(state.filterDrafts);
+    invalidateDerivedDataCaches();
     state.pendingFilterSelection = null;
     state.activeFilterField = "";
     state.isFilterModalOpen = false;
     state.activeChartDate = null;
     state.expandedRowKey = null;
-    render();
+    scheduleRender();
   }
 
   function clearFilterDrafts() {
@@ -567,20 +585,26 @@
       state.filterSearches[name] = "";
     });
     state.filters = cloneFilters(state.filterDrafts);
+    invalidateDerivedDataCaches();
     state.pendingFilterSelection = null;
     state.activeFilterField = "";
     state.isFilterModalOpen = false;
     state.activeChartDate = null;
     state.expandedRowKey = null;
-    render();
+    scheduleRender();
   }
 
   function setActiveChartDate(date) {
     state.activeChartDate = date;
-    render();
+    scheduleRender();
   }
 
   function getRowsForCurrentView() {
+    const cacheKey = buildVisibleRowsCacheKey();
+    if (cacheKey && state.cachedVisibleRowsKey === cacheKey) {
+      return state.cachedVisibleRows;
+    }
+
     const filteredRows = state.baseRows.filter((row) => {
       return Object.entries(state.filters).every(([key, value]) => {
         return !value.length || value.includes(row[key]);
@@ -597,7 +621,7 @@
       }
     });
 
-    return [...latestRows.values()].sort((left, right) => {
+    const sortedRows = [...latestRows.values()].sort((left, right) => {
       const marketCompare = left.market.localeCompare(right.market);
       if (marketCompare !== 0) {
         return marketCompare;
@@ -615,6 +639,10 @@
 
       return left.grade.localeCompare(right.grade);
     });
+
+    state.cachedVisibleRowsKey = cacheKey;
+    state.cachedVisibleRows = sortedRows;
+    return sortedRows;
   }
 
   function buildLatestRowGroupKey(row) {
@@ -627,6 +655,11 @@
   }
 
   function getFilterOptions(field, sourceFilters = state.filters) {
+    const cacheKey = `${field}::${serializeFilters(sourceFilters)}`;
+    if (state.cachedFilterOptions[cacheKey]) {
+      return state.cachedFilterOptions[cacheKey];
+    }
+
     const rows = state.baseRows.filter((row) => {
       return Object.entries(sourceFilters).every(([key, value]) => {
         if (key === field) {
@@ -635,7 +668,9 @@
         return !value.length || value.includes(row[key]);
       });
     });
-    return [...new Set(rows.map((row) => row[field]))].sort((left, right) => left.localeCompare(right));
+    const options = [...new Set(rows.map((row) => row[field]))].sort((left, right) => left.localeCompare(right));
+    state.cachedFilterOptions[cacheKey] = options;
+    return options;
   }
 
   function getDraftFilterOptions(field, query) {
@@ -682,7 +717,7 @@
     const searchInputState = captureSearchInputState();
     const filterInputState = captureFilterInputState();
     const scrollState = captureScrollState();
-    const rows = getRowsForCurrentView();
+    const rows = state.route.view === "table" && state.context ? getRowsForCurrentView() : [];
 
     app.innerHTML = `
       <div class="shell">
@@ -2529,7 +2564,73 @@
     if (state.query.trim() && hasClientSearchIndex()) {
       state.suggestions = buildLocalizedSearchResults(state.query.trim());
     }
-    render();
+    scheduleRender();
+  }
+
+  function scheduleSearchInputWork(query) {
+    if (searchInputTimer !== null) {
+      window.clearTimeout(searchInputTimer);
+    }
+
+    if (!query.trim()) {
+      search(query);
+      return;
+    }
+
+    searchInputTimer = window.setTimeout(() => {
+      searchInputTimer = null;
+      search(query);
+    }, SEARCH_INPUT_DEBOUNCE_MS);
+  }
+
+  function scheduleFilterSearchRender() {
+    if (filterSearchInputTimer !== null) {
+      window.clearTimeout(filterSearchInputTimer);
+    }
+
+    filterSearchInputTimer = window.setTimeout(() => {
+      filterSearchInputTimer = null;
+      scheduleRender();
+    }, SEARCH_INPUT_DEBOUNCE_MS);
+  }
+
+  function scheduleRender() {
+    if (renderFrameId !== null) {
+      return;
+    }
+
+    renderFrameId = window.requestAnimationFrame(() => {
+      renderFrameId = null;
+      render();
+    });
+  }
+
+  function invalidateDerivedDataCaches() {
+    state.cachedVisibleRowsKey = "";
+    state.cachedVisibleRows = [];
+    state.cachedFilterOptions = {};
+  }
+
+  function buildVisibleRowsCacheKey() {
+    if (!state.context) {
+      return "";
+    }
+
+    return [
+      state.route.type,
+      state.route.commodity,
+      state.route.market,
+      state.route.variety,
+      state.baseRows.length,
+      serializeFilters(state.filters),
+    ].join("::");
+  }
+
+  function serializeFilters(filters) {
+    return Object.keys(filters)
+      .sort()
+      .map((key) => `${key}:${(filters[key] || []).slice().sort().join("|")}`)
+      .join(";");
   }
 
   function getStoredLocale() {

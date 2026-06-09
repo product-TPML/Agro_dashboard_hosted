@@ -32,15 +32,21 @@ Rebuild command:
 Current development shape:
 
 - `Agro Dashboard - new data.xlsx` -> `data/agro_dashboard.db` -> `local-dashboard/server.js` -> browser UI
+- `Agro Dashboard - new data.xlsx` -> `data/agro_dashboard.db` -> `scripts/build_pages_site.js` -> `docs/` static site
 
 Current runtime commands:
 
 - `npm run build:static-db`
 - `npm run dashboard:local`
+- `npm run build:pages`
 
 The local dashboard is served at:
 
 - `http://127.0.0.1:3180`
+
+The static GitHub Pages-style build is generated into:
+
+- `docs/`
 
 ## Active Assumptions
 
@@ -86,7 +92,7 @@ If the workbook changes, the database is rebuilt from scratch.
   Dashboard styling.
 
 - `local-dashboard/public/app.js`
-  Client-side dashboard logic, routing, search, custom filter dropdowns, table rendering, and inline history.
+  Client-side dashboard logic, routing, search, custom filter dropdowns, card rendering, inline history, and map interactions.
 
 - `local-dashboard/public/translations.json`
   Active translation source for commodity, market, and variety labels in English and Kannada.
@@ -216,7 +222,7 @@ Variety results are always shown in the form:
 
 - `Variety (Commodity)`
 
-### Table page behavior
+### Results page behavior
 
 There is one shared results view with pre-applied context.
 
@@ -298,6 +304,7 @@ The current results surface shows:
 
 Card content currently includes:
 
+- a single top-line anchor value only, with no extra `Market` / `Commodity` label above it
 - `Arrivals And Units`
 - price labels with rupee units:
   - `Max Price (Rs.)`
@@ -306,6 +313,16 @@ Card content currently includes:
 - a single `Price Updates` block with:
   - `Latest`
   - `Previous`
+
+Current card layout details:
+
+- the anchor value on the first line is shown alone as the strongest card heading
+- `Variety` and `Grade` sit beneath that heading
+- `Arrivals And Units` is rendered as a compact two-column row:
+  - field label on the left
+  - value right-aligned on the same row
+- `Price Updates` shows `Latest` and `Previous` side by side
+- the results view header uses `Showing Results For` plus larger locked context chips
 
 The results UI also currently uses:
 
@@ -335,14 +352,13 @@ Clicking `See Price History` expands an **inline history panel inside the card**
 
 The history panel shows:
 
-- only the heading `Price History`
 - min price
 - max price
 - modal price
 - fixed visual mapping:
-  - max price -> green solid line
-  - min price -> red solid line
-  - modal price -> yellow dotted line
+  - max price -> `#1E3A8A` solid line
+  - min price -> `#C2410C` solid line
+  - modal price -> `#CC9900` dotted line
 - point markers for each plotted date
 - latest date active by default when the chart opens
 - hover/tap selection for any plotted date
@@ -350,6 +366,19 @@ The history panel shows:
 - x-axis dates in `DD-MM`
 - tooltip and selected-date displays in `DD-MM-YYYY`
 - horizontal scrolling isolated to the graph area only
+- a `Last 7 days` / `Last 30 days` bubble aligned at the top-right of the expanded panel
+- a small note above the graph telling users to scroll horizontally to see all dates
+
+Current interaction details:
+
+- the chart no longer eagerly selects points on `touchstart`
+- mobile horizontal swipes are now interpreted as scroll first, making dense charts easier to navigate
+- chart horizontal scroll position is preserved while the same card stays expanded
+- chart horizontal scroll resets only on first expansion or after collapse and reopen
+- the selected-point summary below the graph is arranged as:
+  - `Max` left aligned
+  - `Min` right aligned
+  - `Modal` centered on the next row
 
 When multiple series overlap, all three remain visible. The chart draws `max` last so it stays visually strongest without hiding `min` or `modal`.
 
@@ -394,19 +423,18 @@ The local server currently exposes:
 Implemented and working:
 
 - local server
+- static Pages build generated into `docs/`
 - home screen
 - search suggestion flow
-- route into shared table page
+- route into shared results page
 - locked context headings
 - cascading filters
 - custom filter dropdown menus contained within the card on mobile
 - floating filter action button on the table screen
 - popup-based staged multi-select filters with typed search, removable chips, explicit apply, and clear actions
-- latest-row-only table
-- merged `Arrivals And Units` column
-- table price deltas against the previous comparable update
-- `Latest Price Update At` and `Previous Price Update At` date columns
-- inline row expansion
+- latest-row-only results cards
+- card price deltas against the previous comparable update
+- inline card expansion
 - inline price history chart
 - selected-point chart tooltip and summary values
 - interactive district map on the home screen
@@ -415,11 +443,9 @@ Implemented and working:
 - touch pinch-to-zoom and wheel-based zoom adjustments on the map
 - district-scoped market pins rendered inside the selected district
 - market pin click -> market table route
-- mobile-friendly stacked layout for home and table pages
-- tighter mobile padding on cards and controls for the table screen
-- bounded table container with horizontal and vertical scrolling
-- sticky header row inside the scrolling table container
-- scroll position preserved when selecting a different chart point
+- mobile-friendly stacked layout for home and results pages
+- tighter mobile padding on cards and controls for the results screen
+- chart horizontal scroll preserved when selecting a different chart point
 - local district and market geography used by the home-screen map
 - English/Kannada toggle persisted in browser storage
 - translated commodity, market, and variety labels across suggestions, headings, filters, table cells, history titles, and map market labels
@@ -439,8 +465,9 @@ Not implemented yet:
 - use the workbook as the rebuild source
 - keep the current dataset static
 - build a local Node-served HTML dashboard
+- generate a GitHub Pages-friendly static build from the same source UI
 - make search the primary navigation path
-- keep row history inline in the table
+- keep row history inline in the results cards
 - use the local district map as a secondary navigation path from home
 
 ### Not chosen
@@ -449,7 +476,7 @@ Not implemented yet:
 - write-through editing in the local app
 - direct Excel reads from the browser
 - giant JSON as the primary source of truth
-- latest-row-only table behavior for the current search-driven build
+- latest-row-only results-card behavior for the current search-driven build
 
 ## Historical Context
 
@@ -477,6 +504,9 @@ Reference-only files from that workflow:
 
 - start the local dashboard server with:
   - `npm run dashboard:local`
+
+- build the static Pages bundle with:
+  - `npm run build:pages`
 
 - DB path:
   - `data/agro_dashboard.db`
@@ -515,4 +545,4 @@ Current source limitation:
 
 ## Immediate Next Step
 
-The next practical work is to refine the local dashboard UI and expand any remaining localization coverage beyond commodity, market, and variety names if needed.
+The next practical work is to continue refining the local dashboard UI, expand any remaining localization coverage beyond commodity, market, and variety names if needed, and iterate on the card/history experience as more mobile usage feedback comes in.
