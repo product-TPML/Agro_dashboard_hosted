@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-container": "#636260",
+                        "surface-variant": "#dee0ff",
+                        "surface": "#fbf8ff",
+                        "secondary-fixed-dim": "#c8c6c2",
+                        "on-secondary": "#ffffff",
+                        "on-primary-fixed-variant": "#274e3d",
+                        "tertiary-fixed": "#ffdcbd",
+                        "tertiary": "#3b1f00",
+                        "surface-container-low": "#f4f2ff",
+                        "surface-container-high": "#e5e6ff",
+                        "on-tertiary-fixed": "#2c1600",
+                        "primary-container": "#1b4332",
+                        "on-error": "#ffffff",
+                        "on-secondary-fixed": "#1c1c19",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-fixed-variant": "#623f18",
+                        "error": "#ba1a1a",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-bright": "#fbf8ff",
+                        "secondary": "#5f5e5b",
+                        "on-error-container": "#93000a",
+                        "surface-container": "#ececff",
+                        "tertiary-fixed-dim": "#f0bd8b",
+                        "on-background": "#161a32",
+                        "primary-fixed": "#c1ecd4",
+                        "on-surface-variant": "#414844",
+                        "on-primary-fixed": "#002114",
+                        "surface-tint": "#3f6653",
+                        "on-surface": "#161a32",
+                        "inverse-on-surface": "#f0efff",
+                        "tertiary-container": "#56340e",
+                        "primary": "#012d1d",
+                        "outline": "#717973",
+                        "on-tertiary-container": "#cd9d6d",
+                        "on-primary-container": "#86af99",
+                        "surface-container-highest": "#dee0ff",
+                        "inverse-surface": "#2b2f48",
+                        "background": "#fbf8ff",
+                        "surface-dim": "#d5d8f9",
+                        "outline-variant": "#c1c8c2",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary-fixed-variant": "#474744",
+                        "inverse-primary": "#a5d0b9",
+                        "secondary-container": "#e2dfdb",
+                        "primary-fixed-dim": "#a5d0b9",
+                        "secondary-fixed": "#e5e2de",
+                        "on-primary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "section-gap": "32px",
+                        "gutter": "16px",
+                        "base": "4px",
+                        "container-max": "1280px",
+                        "card-padding": "24px"
+                    },
+                    "fontFamily": {
+                        "display-report": ["Libre Caslon Text"],
+                        "price-trend": ["Inter"],
+                        "price-hero": ["Inter"],
+                        "data-subtle": ["Inter"],
+                        "label-caps": ["Inter"],
+                        "headline-card": ["Libre Caslon Text"],
+                        "body-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "display-report": ["36px", {"lineHeight": "1.2", "fontWeight": "700"}],
+                        "price-trend": ["14px", {"lineHeight": "1.2", "fontWeight": "600"}],
+                        "price-hero": ["22px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "data-subtle": ["14px", {"lineHeight": "1.4", "fontWeight": "400"}],
+                        "label-caps": ["12px", {"lineHeight": "1.4", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                        "headline-card": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            background-color: #fbf8ff;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+</head>
+<body class="font-body-md text-on-surface">
+<!-- Top App Bar -->
+<header class="bg-background fixed top-0 left-0 w-full z-50 flex justify-between items-center px-4 h-16 border-b border-outline-variant">
+<h1 class="font-display-report text-2xl font-bold text-primary tracking-tight">AgriMarket</h1>
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-on-surface-variant">notifications</button>
+<div class="w-8 h-8 rounded-full overflow-hidden bg-secondary-container">
+<img alt="User profile" class="w-full h-full object-cover" data-alt="A professional headshot of a corporate agricultural consultant in a modern light-filled office. The lighting is soft and bright, emphasizing a trustworthy and analytical personality. The overall aesthetic is clean, modern-corporate, and professional, using a natural color palette." src="https://lh3.googleusercontent.com/aida/AP1WRLvu8Jl6WCQYnprfFVts8Q-gjUmDWQkoqKPD_t6Ugk7oFECDW-UjwiKkEp2b6_zYeC1pb7ne7LJig4SFbozmR7bbWcUOYlVPH291bUvXL4vLe8GZoCpMk0lcGgifeQHmzo2-Pn953wez9677Z6S3HrAqdkhCQR7usL-5xK1Cc1h7dGHeuddoh1-DakViIlJXmU6jCa_0MHoa4IRNQkpfGPNBeRpDfDrbzfXdYR35-ttNgju96YWx5cx2lVg"/>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="pt-20 pb-24 px-4 min-h-screen">
+<!-- Welcome Section -->
+<div class="mb-6">
+<h2 class="font-headline-card text-headline-card text-primary mb-1">Today's Prices</h2>
+<p class="font-data-subtle text-data-subtle text-on-surface-variant">Market arrivals &amp; live commodity rates</p>
+</div>
+<!-- Commodity Cards Stack -->
+<div class="space-y-6">
+<!-- Card 1: Wheat -->
+<section class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm">
+<!-- Header -->
+<div class="p-6 border-b border-outline-variant bg-surface-container-low">
+<div class="flex justify-between items-start mb-2">
+<div>
+<span class="font-label-caps text-label-caps text-on-secondary-container block mb-1">COMMODITY</span>
+<h3 class="font-headline-card text-headline-card text-primary">Durum Wheat</h3>
+</div>
+<span class="material-symbols-outlined text-primary" data-weight="fill" style="font-variation-settings: 'FILL' 1;">grass</span>
+</div>
+<div class="flex gap-4">
+<div>
+<span class="font-label-caps text-label-caps text-on-secondary-container block">VARIETY</span>
+<span class="font-body-md text-on-surface font-semibold">Turgidum</span>
+</div>
+<div>
+<span class="font-label-caps text-label-caps text-on-secondary-container block">GRADE</span>
+<span class="font-body-md text-on-surface font-semibold">Premium A</span>
+</div>
+</div>
+</div>
+<!-- Price Metrics Stacked (Mobile Optimized) -->
+<div class="p-6 space-y-4">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps text-on-surface-variant">MAX PRICE</span>
+<div class="flex items-center gap-2">
+<span class="font-price-hero text-price-hero text-on-surface">₹2,450.00</span>
+<div class="flex items-center text-primary-container">
+<span class="material-symbols-outlined text-sm">north_east</span>
+<span class="font-price-trend text-price-trend">+57</span>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps text-on-surface-variant">MIN PRICE</span>
+<div class="flex items-center gap-2">
+<span class="font-price-hero text-price-hero text-on-surface">₹2,100.00</span>
+<div class="flex items-center text-error">
+<span class="material-symbols-outlined text-sm">south_east</span>
+<span class="font-price-trend text-price-trend">-23</span>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps text-on-surface-variant">MODAL PRICE</span>
+<div class="flex items-center gap-2">
+<span class="font-price-hero text-price-hero text-primary">₹2,280.00</span>
+<div class="flex items-center text-primary-container">
+<span class="material-symbols-outlined text-sm">north_east</span>
+<span class="font-price-trend text-price-trend">+18</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Arrivals & Updates (MOVED ABOVE CHART) -->
+<div class="px-6 py-4 bg-surface-bright border-y border-outline-variant">
+<div class="grid grid-cols-2 gap-4">
+<div class="flex flex-col gap-1">
+<span class="font-label-caps text-label-caps text-on-surface-variant">ARRIVALS</span>
+<span class="font-body-md text-on-surface font-bold">1,240 MT</span>
+</div>
+<div class="flex flex-col gap-1">
+<span class="font-label-caps text-label-caps text-on-surface-variant">UPDATED</span>
+<div class="flex flex-col">
+<span class="font-body-md text-on-surface font-bold">30-05-2026</span>
+<span class="font-data-subtle text-on-surface-variant text-sm">Prev: 29-05-2026</span>
+</div>
+</div>
+</div>
+</div>
+<!-- 30-Day Price Trend Section (MOVED BELOW ARRIVALS) -->
+<div class="p-6">
+<div class="flex justify-between items-center mb-4">
+<span class="font-label-caps text-label-caps text-on-surface-variant">LAST 30 DAYS</span>
+<span class="font-data-subtle text-xs text-on-surface-variant opacity-70">← Scroll horizontally →</span>
+</div>
+<div class="overflow-x-auto custom-scrollbar pb-2">
+<div class="min-w-[600px] h-40 flex items-end relative">
+<!-- Grid Lines -->
+<div class="absolute inset-0 flex flex-col justify-between pointer-events-none">
+<div class="border-b border-outline-variant opacity-20 w-full"></div>
+<div class="border-b border-outline-variant opacity-20 w-full"></div>
+<div class="border-b border-outline-variant opacity-20 w-full"></div>
+<div class="border-b border-outline-variant opacity-20 w-full"></div>
+</div>
+<!-- SVG Line Chart -->
+<svg class="w-full h-full overflow-visible" preserveaspectratio="none" viewbox="0 0 600 160">
+<path d="M0,140 L50,130 L100,135 L150,110 L200,120 L250,90 L300,100 L350,80 L400,85 L450,60 L500,70 L550,40 L600,20" fill="none" stroke="#1b4332" stroke-width="3"></path>
+<path d="M0,140 L50,130 L100,135 L150,110 L200,120 L250,90 L300,100 L350,80 L400,85 L450,60 L500,70 L550,40 L600,20 V160 H0 Z" fill="url(#gradient)" opacity="0.1"></path>
+<defs>
+<lineargradient id="gradient" x1="0%" x2="0%" y1="0%" y2="100%">
+<stop offset="0%" stop-color="#1b4332"></stop>
+<stop offset="100%" stop-color="#1b4332" stop-opacity="0"></stop>
+</lineargradient>
+</defs>
+</svg>
+</div>
+<!-- Date Labels -->
+<div class="min-w-[600px] flex justify-between mt-2 px-1">
+<span class="font-label-caps text-[10px] text-on-surface-variant">01 May</span>
+<span class="font-label-caps text-[10px] text-on-surface-variant">10 May</span>
+<span class="font-label-caps text-[10px] text-on-surface-variant">20 May</span>
+<span class="font-label-caps text-[10px] text-on-surface-variant">30 May</span>
+</div>
+</div>
+</div>
+<!-- Footer Action -->
+<div class="p-4 border-t border-outline-variant">
+<button class="w-full py-3 bg-primary text-white font-label-caps rounded-lg active:scale-95 transition-transform flex items-center justify-center gap-2">
+                        See Price History
+                        <span class="material-symbols-outlined text-sm">trending_up</span>
+</button>
+<!-- Close button added at very bottom -->
+<button class="w-full mt-2 py-2 text-primary font-label-caps flex items-center justify-center gap-1 opacity-70 active:scale-95 transition-transform">
+                        Close
+                        <span class="material-symbols-outlined text-sm">expand_less</span>
+</button>
+</div>
+</section>
+<!-- Card 2: Corn -->
+<section class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm">
+<!-- Header -->
+<div class="p-6 border-b border-outline-variant bg-surface-container-low">
+<div class="flex justify-between items-start mb-2">
+<div>
+<span class="font-label-caps text-label-caps text-on-secondary-container block mb-1">COMMODITY</span>
+<h3 class="font-headline-card text-headline-card text-primary">Yellow Corn</h3>
+</div>
+<span class="material-symbols-outlined text-primary">eco</span>
+</div>
+<div class="flex gap-4">
+<div>
+<span class="font-label-caps text-label-caps text-on-secondary-container block">VARIETY</span>
+<span class="font-body-md text-on-surface font-semibold">Hybrid 42</span>
+</div>
+<div>
+<span class="font-label-caps text-label-caps text-on-secondary-container block">GRADE</span>
+<span class="font-body-md text-on-surface font-semibold">Standard</span>
+</div>
+</div>
+</div>
+<!-- Price Metrics Stacked -->
+<div class="p-6 space-y-4">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps text-on-surface-variant">MAX PRICE</span>
+<div class="flex items-center gap-2">
+<span class="font-price-hero text-price-hero text-on-surface">₹1,820.00</span>
+<div class="flex items-center text-error">
+<span class="material-symbols-outlined text-sm">south_east</span>
+<span class="font-price-trend text-price-trend">-60</span>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps text-on-surface-variant">MIN PRICE</span>
+<div class="flex items-center gap-2">
+<span class="font-price-hero text-price-hero text-on-surface">₹1,650.00</span>
+<div class="flex items-center text-error">
+<span class="material-symbols-outlined text-sm">south_east</span>
+<span class="font-price-trend text-price-trend">-25</span>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps text-on-surface-variant">MODAL PRICE</span>
+<div class="flex items-center gap-2">
+<span class="font-price-hero text-price-hero text-primary">₹1,710.00</span>
+<div class="flex items-center text-on-secondary-container">
+<span class="material-symbols-outlined text-sm">horizontal_rule</span>
+<span class="font-price-trend text-price-trend">0</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Arrivals & Updates -->
+<div class="px-6 py-4 bg-surface-bright border-y border-outline-variant">
+<div class="grid grid-cols-2 gap-4">
+<div class="flex flex-col gap-1">
+<span class="font-label-caps text-label-caps text-on-surface-variant">ARRIVALS</span>
+<span class="font-body-md text-on-surface font-bold">890 MT</span>
+</div>
+<div class="flex flex-col gap-1">
+<span class="font-label-caps text-label-caps text-on-surface-variant">UPDATED</span>
+<div class="flex flex-col">
+<span class="font-body-md text-on-surface font-bold">30-05-2026</span>
+<span class="font-data-subtle text-on-surface-variant text-sm">Prev: 29-05-2026</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer Action -->
+<div class="p-4">
+<button class="w-full py-3 bg-primary text-white font-label-caps rounded-lg active:scale-95 transition-transform flex items-center justify-center gap-2">
+                        See Price History
+                        <span class="material-symbols-outlined text-sm">trending_up</span>
+</button>
+</div>
+</section>
+</div>
+</main>
+<!-- Navigation Shell: BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center h-16 px-4 bg-surface border-t border-outline-variant shadow-lg lg:hidden">
+<a class="flex flex-col items-center justify-center text-on-surface-variant" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-caps text-label-caps">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary font-bold" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">analytics</span>
+<span class="font-label-caps text-label-caps">Prices</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant" href="#">
+<span class="material-symbols-outlined">update</span>
+<span class="font-label-caps text-label-caps">Updates</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant" href="#">
+<span class="material-symbols-outlined">account_circle</span>
+<span class="font-label-caps text-label-caps">Profile</span>
+</a>
+</nav>
+<!-- Decorative Elements (Subtle Organic Textures) -->
+<div class="fixed top-0 left-0 w-full h-full pointer-events-none opacity-[0.03] z-[-1]" style="background-image: url('https://www.transparenttextures.com/patterns/natural-paper.png');"></div>
+<script>
+        // Simple micro-interactions for active state on mobile cards
+        document.querySelectorAll('section').forEach(card => {
+            card.addEventListener('click', () => {
+                // Future expansion: open detail view
+            });
+        });
+    </script>
+</body></html>

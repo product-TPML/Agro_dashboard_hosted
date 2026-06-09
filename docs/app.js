@@ -716,7 +716,7 @@
               <section class="panel table-card">
                 <div class="table-head">
                   <div>
-                    <p class="search-label">Table View</p>
+                    <p class="search-label">Showing Results For</p>
                     <div class="locked-headings">${formatLockedHeadings()}</div>
                     <p>Use the filters to narrow the list. Click any row to view the recent price trend for that exact commodity entry.</p>
                   </div>
@@ -1287,16 +1287,13 @@
     return `
       <section class="history-card">
         <div class="history-top">
-          <div>
-            <p class="search-label">Price History</p>
-            <h3>Price History</h3>
-            <p>Showing the recent trend ending on ${escapeHtml(formatDateFull(row.reportDate))}.</p>
-          </div>
+          <div class="history-top-spacer"></div>
           <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
             <span class="window-chip">${windowLabel}</span>
           </div>
         </div>
         <div class="chart-shell">
+          <p class="chart-scroll-note">&lt;-- Scroll horizontally to see all dates --&gt;</p>
           <div class="chart-legend">
             <span class="legend-key legend-max"><span></span>Max price</span>
             <span class="legend-key legend-min"><span></span>Min price</span>
