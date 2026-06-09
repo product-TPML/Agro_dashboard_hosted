@@ -15,6 +15,9 @@
   --gain: #14804a;
   --loss: #ba1a1a;
   --modal: #b7791f;
+  --price-max: #1e3a8a;
+  --price-min: #c2410c;
+  --price-modal: #cc9900;
 }
 
 * {
@@ -446,6 +449,8 @@ select {
 
 .table-card {
   margin-top: 0;
+  padding-left: 16px;
+  padding-right: 16px;
 }
 
 .table-head {
@@ -823,6 +828,13 @@ select {
   border-bottom: 1px solid var(--line);
 }
 
+.result-card-title-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0;
+  flex-wrap: wrap;
+}
+
 .result-card-label,
 .result-price-label,
 .result-detail-label {
@@ -899,6 +911,18 @@ select {
   letter-spacing: -0.035em;
 }
 
+.price-value-max {
+  color: var(--price-max);
+}
+
+.price-value-min {
+  color: var(--price-min);
+}
+
+.price-value-modal {
+  color: var(--price-modal);
+}
+
 .price-delta {
   display: inline-flex;
   align-items: center;
@@ -935,7 +959,8 @@ select {
 
 .date-stack {
   display: grid;
-  gap: 6px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 16px;
 }
 
 .date-stack-item {
@@ -992,8 +1017,8 @@ select {
 }
 
 .result-card-history {
-  padding: 0 18px 18px;
-  background: #fffefc;
+  padding: 0 8px 14px;
+  background: transparent;
 }
 
 .empty-state {
@@ -1002,7 +1027,7 @@ select {
 }
 
 .history-card {
-  background: #fffefc;
+  background: transparent;
 }
 
 .history-top {
@@ -1066,10 +1091,10 @@ select {
 }
 
 .chart-shell {
-  border: 1px solid var(--line);
-  border-radius: 20px;
-  padding: 16px;
-  background: linear-gradient(180deg, #fffefd 0%, #fbf9ff 100%);
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  background: transparent;
 }
 
 .chart-scroll-note {
@@ -1116,18 +1141,18 @@ select {
 }
 
 .legend-min span {
-  background: var(--loss);
+  background: var(--price-min);
 }
 
 .legend-max span {
-  background: var(--gain);
+  background: var(--price-max);
 }
 
 .legend-modal span {
   background: repeating-linear-gradient(
     to right,
-    var(--modal) 0,
-    var(--modal) 10px,
+    var(--price-modal) 0,
+    var(--price-modal) 10px,
     transparent 10px,
     transparent 16px
   );
@@ -1135,7 +1160,7 @@ select {
 
 .history-grid {
   display: grid;
-  gap: 14px;
+  gap: 10px;
 }
 
 [data-chart-root="true"] {
@@ -1153,7 +1178,7 @@ select {
 .chart-summary {
   display: grid;
   gap: 10px;
-  padding: 14px 16px;
+  padding: 12px 14px;
   border: 1px solid var(--line);
   border-radius: 18px;
   background: #fff;
@@ -1192,18 +1217,18 @@ select {
 }
 
 .chart-metric-max {
-  background: rgba(20, 128, 74, 0.12);
-  color: var(--gain);
+  background: rgba(30, 58, 138, 0.12);
+  color: var(--price-max);
 }
 
 .chart-metric-min {
-  background: rgba(186, 26, 26, 0.12);
-  color: var(--loss);
+  background: rgba(194, 65, 12, 0.12);
+  color: var(--price-min);
 }
 
 .chart-metric-modal {
-  background: rgba(205, 157, 109, 0.22);
-  color: var(--modal);
+  background: rgba(55, 65, 81, 0.12);
+  color: var(--price-modal);
 }
 
 .axis-note {
@@ -1239,7 +1264,21 @@ select {
 }
 
 .result-card-details .result-detail-block:first-child {
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+  align-items: center;
   border-right: 1px solid var(--line);
+}
+
+.result-card-details .result-detail-block:first-child .result-detail-label {
+  margin-bottom: 0;
+  align-self: center;
+}
+
+.result-card-details .result-detail-block:first-child .result-detail-value {
+  justify-self: end;
+  text-align: right;
+  align-self: center;
 }
 
 .result-detail-label {
@@ -1267,7 +1306,7 @@ select {
     grid-area: identity;
     border-right: 1px solid var(--line);
     border-bottom: 1px solid var(--line);
-    min-height: 186px;
+    min-height: 152px;
     align-content: start;
   }
 
@@ -1314,6 +1353,11 @@ select {
   .welcome-card,
   .map-card {
     width: 100%;
+  }
+
+  .table-card {
+    padding-left: 10px;
+    padding-right: 10px;
   }
 
   .table-head {
@@ -1387,11 +1431,16 @@ select {
   }
 
   .result-card-history {
-    padding: 0 12px 12px;
+    padding: 0 4px 10px;
   }
 
   .result-card-identity {
     padding: 20px 18px;
+  }
+
+  .result-card-title-row {
+    gap: 8px;
+    align-items: baseline;
   }
 
   .result-price-group {
@@ -1421,8 +1470,14 @@ select {
   }
 
   .result-card-details .result-detail-block:first-child {
+    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
     border-right: 0;
     border-bottom: 1px solid var(--line);
+  }
+
+  .date-stack {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px 12px;
   }
 
   .history-top h3 {
@@ -1431,6 +1486,7 @@ select {
 
   .chart-scroll-note {
     font-size: 11px;
+    margin-bottom: 8px;
   }
 
   .filter-fab {

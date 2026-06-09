@@ -3,6 +3,11 @@
   const LOCALE_STORAGE_KEY = "commodity-dashboard-locale";
   const FILTER_HINT_DURATION_MS = 5000;
   const FILTER_HINT_COLLAPSE_MS = 320;
+  const PRICE_COLORS = {
+    max: "#1E3A8A",
+    min: "#C2410C",
+    modal: "#CC9900",
+  };
 
   const state = {
     route: parseRoute(),
@@ -809,6 +814,7 @@
     const tableWrap = document.querySelector("[data-preserve-scroll-id='table-wrap']");
     const filterModalBody = document.querySelector("[data-preserve-scroll-id='filter-modal-body']");
     const filterResults = [...document.querySelectorAll("[data-preserve-scroll-id='filter-search-results']")];
+    const chartScroll = document.querySelector("[data-preserve-scroll-id='chart-scroll']");
     return {
       windowX: window.scrollX,
       windowY: window.scrollY,
@@ -818,6 +824,11 @@
       } : null,
       filterModalBody: filterModalBody ? {
         scrollTop: filterModalBody.scrollTop,
+      } : null,
+      chartScroll: chartScroll ? {
+        rowKey: chartScroll.dataset.chartRowKey || "",
+        scrollLeft: chartScroll.scrollLeft,
+        scrollTop: chartScroll.scrollTop,
       } : null,
       filterResults: filterResults.map((node) => ({
         field: node.dataset.filterField || "",
@@ -842,6 +853,7 @@
 
     const tableWrap = document.querySelector("[data-preserve-scroll-id='table-wrap']");
     if (!tableWrap) {
+      restoreChartScrollState(snapshot);
       if (snapshot.filterModalBody || (snapshot.filterResults && snapshot.filterResults.length)) {
         restoreFilterScrollState(snapshot);
       }
@@ -850,7 +862,26 @@
 
     tableWrap.scrollLeft = snapshot.tableWrap.scrollLeft;
     tableWrap.scrollTop = snapshot.tableWrap.scrollTop;
+    restoreChartScrollState(snapshot);
     restoreFilterScrollState(snapshot);
+  }
+
+  function restoreChartScrollState(snapshot) {
+    if (!snapshot.chartScroll) {
+      return;
+    }
+
+    if (!state.expandedRowKey || snapshot.chartScroll.rowKey !== state.expandedRowKey) {
+      return;
+    }
+
+    const chartScroll = document.querySelector("[data-preserve-scroll-id='chart-scroll']");
+    if (!chartScroll) {
+      return;
+    }
+
+    chartScroll.scrollLeft = snapshot.chartScroll.scrollLeft;
+    chartScroll.scrollTop = snapshot.chartScroll.scrollTop;
   }
 
   function restoreFilterScrollState(snapshot) {
@@ -1153,8 +1184,9 @@
       <article class="result-card ${isExpanded ? "is-expanded" : ""}" data-row-key="${escapeAttribute(row.rowKey)}">
         <div class="result-card-main">
           <section class="result-card-identity">
-            <p class="result-card-label">${escapeHtml(presentation.titleLabel)}</p>
-            <h3>${escapeHtml(presentation.titleValue)}</h3>
+            <div class="result-card-title-row">
+              <h3>${escapeHtml(presentation.titleValue)}</h3>
+            </div>
             <div class="result-card-meta">
               ${presentation.meta.map((entry) => `
                 <div class="result-meta-item">
@@ -1166,9 +1198,9 @@
           </section>
 
           <section class="result-card-prices">
-            ${renderPriceGroup("Max Price (Rs.)", row.maxPrice, getPreviousPriceDelta(row, "maxPrice", previousRow))}
-            ${renderPriceGroup("Min Price (Rs.)", row.minPrice, getPreviousPriceDelta(row, "minPrice", previousRow))}
-            ${renderPriceGroup("Modal Price (Rs.)", row.modalPrice, getPreviousPriceDelta(row, "modalPrice", previousRow))}
+            ${renderPriceGroup("max", "Max Price (Rs.)", row.maxPrice, getPreviousPriceDelta(row, "maxPrice", previousRow))}
+            ${renderPriceGroup("min", "Min Price (Rs.)", row.minPrice, getPreviousPriceDelta(row, "minPrice", previousRow))}
+            ${renderPriceGroup("modal", "Modal Price (Rs.)", row.modalPrice, getPreviousPriceDelta(row, "modalPrice", previousRow))}
           </section>
 
           <section class="result-card-details">
@@ -1206,12 +1238,12 @@
     `;
   }
 
-  function renderPriceGroup(label, value, delta) {
+  function renderPriceGroup(kind, label, value, delta) {
     return `
-      <div class="result-price-group">
+      <div class="result-price-group result-price-group-${escapeAttribute(kind)}">
         <span class="result-price-label">${escapeHtml(label)}</span>
         <div class="price-stack">
-          <span class="price-value">${formatCurrency(value)}</span>
+          <span class="price-value price-value-${escapeAttribute(kind)}">${formatCurrency(value)}</span>
           ${renderPriceDelta(delta)}
         </div>
       </div>
@@ -1300,7 +1332,7 @@
             <span class="legend-key legend-modal"><span></span>Modal price</span>
           </div>
           <div class="history-grid">
-            <div class="chart-scroll">
+            <div class="chart-scroll" data-preserve-scroll-id="chart-scroll" data-chart-row-key="${escapeAttribute(row.rowKey)}">
               ${renderChart(historyRows, activePoint)}
             </div>
             ${renderChartSummary(activePoint)}
@@ -1369,15 +1401,15 @@
 
     const tooltip = `
       <g class="chart-tooltip" aria-hidden="true">
-        <line x1="${tooltipAnchorX}" y1="${tooltipAnchorY}" x2="${activeX}" y2="${activeTopY}" stroke="#d8b2ab" stroke-width="1.5" stroke-dasharray="4 4" />
+        <line x1="${tooltipAnchorX}" y1="${tooltipAnchorY}" x2="${activeX}" y2="${activeTopY}" stroke="#c9cedb" stroke-width="1.5" stroke-dasharray="4 4" />
         <rect x="${tooltipX}" y="${tooltipY}" width="${tooltipWidth}" height="${tooltipHeight}" rx="16" fill="#fffaf6" stroke="#e0c1b7" />
         <text x="${tooltipX + 14}" y="${tooltipY + 20}" fill="#6b4a46" font-size="12" font-weight="700">${escapeHtml(formatDateFull(activePoint.reportDate))}</text>
-        <circle cx="${tooltipX + 18}" cy="${tooltipY + 38}" r="4" fill="#137f4a" />
-        <text x="${tooltipX + 30}" y="${tooltipY + 42}" fill="#251918" font-size="12">Max ${escapeHtml(formatCurrency(activePoint.maxPrice))}</text>
-        <circle cx="${tooltipX + 18}" cy="${tooltipY + 56}" r="4" fill="#c1262c" />
-        <text x="${tooltipX + 30}" y="${tooltipY + 60}" fill="#251918" font-size="12">Min ${escapeHtml(formatCurrency(activePoint.minPrice))}</text>
-        <circle cx="${tooltipX + 18}" cy="${tooltipY + 74}" r="4" fill="#d9a320" />
-        <text x="${tooltipX + 30}" y="${tooltipY + 78}" fill="#251918" font-size="12">Modal ${escapeHtml(formatCurrency(activePoint.modalPrice))}</text>
+        <circle cx="${tooltipX + 18}" cy="${tooltipY + 38}" r="4" fill="${PRICE_COLORS.max}" />
+        <text x="${tooltipX + 30}" y="${tooltipY + 42}" fill="${PRICE_COLORS.max}" font-size="12">Max ${escapeHtml(formatCurrency(activePoint.maxPrice))}</text>
+        <circle cx="${tooltipX + 18}" cy="${tooltipY + 56}" r="4" fill="${PRICE_COLORS.min}" />
+        <text x="${tooltipX + 30}" y="${tooltipY + 60}" fill="${PRICE_COLORS.min}" font-size="12">Min ${escapeHtml(formatCurrency(activePoint.minPrice))}</text>
+        <circle cx="${tooltipX + 18}" cy="${tooltipY + 74}" r="4" fill="${PRICE_COLORS.modal}" />
+        <text x="${tooltipX + 30}" y="${tooltipY + 78}" fill="${PRICE_COLORS.modal}" font-size="12">Modal ${escapeHtml(formatCurrency(activePoint.modalPrice))}</text>
       </g>
     `;
 
@@ -1389,10 +1421,10 @@
       const isActive = row.reportDate === activePoint.reportDate;
       return `
         <g data-chart-date="${escapeAttribute(row.reportDate)}" class="chart-point-group ${isActive ? "is-active" : ""}">
-          <line x1="${x}" y1="${paddingY}" x2="${x}" y2="${height - paddingY}" stroke="${isActive ? "#d85a4c" : "transparent"}" stroke-dasharray="5 5" />
-          <circle cx="${x}" cy="${maxY}" r="${isActive ? 5 : 3.5}" fill="#137f4a" stroke="#fffaf6" stroke-width="2" />
-          <circle cx="${x}" cy="${minY}" r="${isActive ? 5 : 3.5}" fill="#c1262c" stroke="#fffaf6" stroke-width="2" />
-          <circle cx="${x}" cy="${modalY}" r="${isActive ? 5 : 3.5}" fill="#d9a320" stroke="#fffaf6" stroke-width="2" />
+          <line x1="${x}" y1="${paddingY}" x2="${x}" y2="${height - paddingY}" stroke="${isActive ? "#adb7d8" : "transparent"}" stroke-dasharray="5 5" />
+          <circle cx="${x}" cy="${maxY}" r="${isActive ? 5 : 3.5}" fill="${PRICE_COLORS.max}" stroke="#fffaf6" stroke-width="2" />
+          <circle cx="${x}" cy="${minY}" r="${isActive ? 5 : 3.5}" fill="${PRICE_COLORS.min}" stroke="#fffaf6" stroke-width="2" />
+          <circle cx="${x}" cy="${modalY}" r="${isActive ? 5 : 3.5}" fill="${PRICE_COLORS.modal}" stroke="#fffaf6" stroke-width="2" />
           <rect x="${x - 16}" y="${paddingY}" width="32" height="${height - paddingY * 2}" fill="transparent" />
         </g>
       `;
@@ -1400,11 +1432,11 @@
 
     return `
       <svg viewBox="0 0 ${width} ${height}" width="100%" role="img" aria-label="Price history" data-chart-root="true">
-        <line x1="${paddingX}" y1="${height - paddingY}" x2="${width - paddingX}" y2="${height - paddingY}" stroke="#d6c5a5" />
-        <line x1="${paddingX}" y1="${paddingY}" x2="${paddingX}" y2="${height - paddingY}" stroke="#d6c5a5" />
-        <path d="${minPath}" fill="none" stroke="#c1262c" stroke-width="3" />
-        <path d="${modalPath}" fill="none" stroke="#d9a320" stroke-width="3" stroke-dasharray="10 6" />
-        <path d="${maxPath}" fill="none" stroke="#137f4a" stroke-width="3.5" />
+        <line x1="${paddingX}" y1="${height - paddingY}" x2="${width - paddingX}" y2="${height - paddingY}" stroke="#d5d8e6" />
+        <line x1="${paddingX}" y1="${paddingY}" x2="${paddingX}" y2="${height - paddingY}" stroke="#d5d8e6" />
+        <path d="${minPath}" fill="none" stroke="${PRICE_COLORS.min}" stroke-width="3" />
+        <path d="${modalPath}" fill="none" stroke="${PRICE_COLORS.modal}" stroke-width="3" stroke-dasharray="10 6" />
+        <path d="${maxPath}" fill="none" stroke="${PRICE_COLORS.max}" stroke-width="3.5" />
         ${pointTargets}
         ${tooltip}
         ${labels}
