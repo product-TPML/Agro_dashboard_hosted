@@ -52,7 +52,6 @@
   let filterHintTimer = null;
   let filterHintFinalizeTimer = null;
   let searchInputTimer = null;
-  let filterSearchInputTimer = null;
   let renderFrameId = null;
 
   const MAP_DISTRICT_COLORS = [
@@ -290,7 +289,7 @@
     const token = ++state.searchToken;
     if (!query.trim()) {
       state.suggestions = [];
-      scheduleRender();
+      syncSearchSuggestionsUi();
       return;
     }
 
@@ -299,12 +298,12 @@
         return;
       }
       state.suggestions = buildLocalizedSearchResults(query.trim());
-      scheduleRender();
+      syncSearchSuggestionsUi();
       return;
     }
 
     state.suggestions = [];
-    scheduleRender();
+    syncSearchSuggestionsUi();
   }
 
   async function loadContext() {
@@ -435,7 +434,7 @@
     if (!event.target.closest("[data-search-root]")) {
       if (state.suggestions.length) {
         state.suggestions = [];
-        render();
+        syncSearchSuggestionsUi();
         return;
       }
     }
@@ -542,7 +541,7 @@
       selectionStart,
       selectionEnd,
     };
-    scheduleFilterSearchRender();
+    syncFilterFieldUi(name);
   }
 
   function activateFilterField(name) {
@@ -550,7 +549,7 @@
       return;
     }
     state.activeFilterField = name;
-    scheduleRender();
+    syncAllFilterFieldUis();
   }
 
   function toggleDraftFilterValue(name, value) {
@@ -953,7 +952,7 @@
           >
         </div>
         <p class="search-hint">Examples: Tomato, Mysuru, or Local.</p>
-        ${state.suggestions.length ? renderSuggestions() : ""}
+        <div data-search-suggestions>${state.suggestions.length ? renderSuggestions() : ""}</div>
       </section>
     `;
   }
@@ -1038,6 +1037,14 @@
         }).join("")}
       </div>
     `;
+  }
+
+  function syncSearchSuggestionsUi() {
+    document.querySelectorAll("[data-search-suggestions]").forEach((node) => {
+      node.innerHTML = state.suggestions.length ? renderSuggestions() : "";
+    });
+
+    bindSuggestionEvents();
   }
 
   function getSuggestionLabel(result) {
@@ -1129,7 +1136,7 @@
             value="${escapeAttribute(query)}"
             data-filter-search="${field}"
           >
-          <div class="filter-search-results ${isOpen ? "is-open" : ""}" data-preserve-scroll-id="filter-search-results" data-filter-field="${field}">
+          <div class="filter-search-results ${isOpen ? "is-open" : ""}" data-preserve-scroll-id="filter-search-results" data-filter-results="${field}" data-filter-field="${field}">
             ${isOpen ? (options.length ? options.map((value) => `
               <button
                 type="button"
@@ -1145,6 +1152,63 @@
         </div>
       </div>
     `;
+  }
+
+  function renderFilterOptionsMarkup(field) {
+    const selected = state.filterDrafts[field] || [];
+    const query = state.filterSearches[field] || "";
+    const options = getDraftFilterOptions(field, query);
+
+    if (!options.length) {
+      return `<p class="muted filter-empty-note">No matching options.</p>`;
+    }
+
+    return options.map((value) => `
+      <button
+        type="button"
+        class="filter-search-option ${selected.includes(value) ? "is-selected" : ""}"
+        data-toggle-draft-filter="${field}"
+        data-toggle-draft-value="${escapeAttribute(value)}"
+      >
+        <span>${escapeHtml(translateEntity(field, value))}</span>
+        ${selected.includes(value) ? `<span class="filter-option-check">&#10003;</span>` : ""}
+      </button>
+    `).join("");
+  }
+
+  function syncFilterFieldUi(field) {
+    const resultsNode = document.querySelector(`[data-filter-results="${field}"]`);
+    if (!resultsNode) {
+      return;
+    }
+
+    document.querySelectorAll("[data-filter-results]").forEach((node) => {
+      node.classList.toggle("is-open", node.dataset.filterResults === state.activeFilterField);
+    });
+
+    if (state.activeFilterField === field) {
+      resultsNode.innerHTML = renderFilterOptionsMarkup(field);
+      bindDraftFilterToggleEvents(resultsNode);
+    } else {
+      resultsNode.innerHTML = "";
+    }
+  }
+
+  function syncAllFilterFieldUis() {
+    document.querySelectorAll("[data-filter-results]").forEach((node) => {
+      const field = node.dataset.filterResults;
+      if (!field) {
+        return;
+      }
+      if (field === state.activeFilterField) {
+        node.classList.add("is-open");
+        node.innerHTML = renderFilterOptionsMarkup(field);
+        bindDraftFilterToggleEvents(node);
+      } else {
+        node.classList.remove("is-open");
+        node.innerHTML = "";
+      }
+    });
   }
 
   function renderResults(rows) {
@@ -1534,14 +1598,7 @@
       });
     });
 
-    document.querySelectorAll("[data-suggestion-index]").forEach((button) => {
-      button.addEventListener("click", () => {
-        const result = state.suggestions[Number(button.dataset.suggestionIndex)];
-        if (result) {
-          handleSuggestionSelect(result);
-        }
-      });
-    });
+    bindSuggestionEvents();
 
     document.querySelectorAll("[data-open-filter-modal]").forEach((button) => {
       button.addEventListener("click", openFilterModal);
@@ -1572,11 +1629,7 @@
       });
     });
 
-    document.querySelectorAll("[data-toggle-draft-filter]").forEach((button) => {
-      button.addEventListener("click", () => {
-        toggleDraftFilterValue(button.dataset.toggleDraftFilter, button.dataset.toggleDraftValue);
-      });
-    });
+    bindDraftFilterToggleEvents(document);
 
     document.querySelectorAll("[data-remove-draft-filter]").forEach((button) => {
       button.addEventListener("click", (event) => {
@@ -1658,6 +1711,35 @@
     });
 
     wireMapInteractions();
+  }
+
+  function bindSuggestionEvents() {
+    document.querySelectorAll("[data-suggestion-index]").forEach((button) => {
+      if (button.dataset.boundSuggestionClick === "true") {
+        return;
+      }
+
+      button.dataset.boundSuggestionClick = "true";
+      button.addEventListener("click", () => {
+        const result = state.suggestions[Number(button.dataset.suggestionIndex)];
+        if (result) {
+          handleSuggestionSelect(result);
+        }
+      });
+    });
+  }
+
+  function bindDraftFilterToggleEvents(root) {
+    root.querySelectorAll("[data-toggle-draft-filter]").forEach((button) => {
+      if (button.dataset.boundToggleDraftFilter === "true") {
+        return;
+      }
+
+      button.dataset.boundToggleDraftFilter = "true";
+      button.addEventListener("click", () => {
+        toggleDraftFilterValue(button.dataset.toggleDraftFilter, button.dataset.toggleDraftValue);
+      });
+    });
   }
 
   function setupVisualViewportTracking() {
@@ -2580,17 +2662,6 @@
     searchInputTimer = window.setTimeout(() => {
       searchInputTimer = null;
       search(query);
-    }, SEARCH_INPUT_DEBOUNCE_MS);
-  }
-
-  function scheduleFilterSearchRender() {
-    if (filterSearchInputTimer !== null) {
-      window.clearTimeout(filterSearchInputTimer);
-    }
-
-    filterSearchInputTimer = window.setTimeout(() => {
-      filterSearchInputTimer = null;
-      scheduleRender();
     }, SEARCH_INPUT_DEBOUNCE_MS);
   }
 
