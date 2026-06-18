@@ -260,6 +260,10 @@ select {
   text-align: center;
 }
 
+.category-swipe-hint-mobile {
+  display: none;
+}
+
 .category-rail,
 .commodity-rail {
   display: flex;
@@ -359,6 +363,11 @@ select {
   padding: 4px 0 2px;
   overflow: hidden;
   background: transparent;
+}
+
+.commodity-rail-helper-desktop {
+  margin: 0;
+  text-align: center;
 }
 
 .commodity-rail-meta {
@@ -1468,6 +1477,10 @@ select {
   cursor: pointer;
 }
 
+.chart-point-group.is-baseline {
+  cursor: default;
+}
+
 .history-chart-panel {
   min-width: 0;
 }
@@ -1601,6 +1614,22 @@ select {
   gap: 12px;
 }
 
+.history-layout[data-chart-summary-layout="compact"] .chart-scroll-note {
+  order: 2;
+}
+
+.history-layout[data-chart-summary-layout="compact"] .history-chart-panel {
+  order: 3;
+}
+
+.history-layout[data-chart-summary-layout="compact"] .chart-summary-shell {
+  order: 1;
+}
+
+.history-layout[data-chart-summary-layout="compact"] .axis-note {
+  order: 4;
+}
+
 .history-layout[data-chart-summary-layout="compact"] .chart-summary {
   grid-template-columns: 1fr;
   align-items: stretch;
@@ -1641,6 +1670,24 @@ select {
   grid-template-columns: minmax(0, 1fr) 360px;
   align-items: start;
   gap: 18px 22px;
+}
+
+.history-layout[data-chart-summary-layout="wide"] .chart-summary-shell {
+  order: 2;
+}
+
+.history-layout[data-chart-summary-layout="wide"] .chart-scroll-note {
+  order: 1;
+  grid-column: 1;
+  margin-bottom: 0;
+}
+
+.history-layout[data-chart-summary-layout="wide"] .history-chart-panel {
+  order: 3;
+}
+
+.history-layout[data-chart-summary-layout="wide"] .axis-note {
+  order: 4;
 }
 
 .history-layout[data-chart-summary-layout="wide"] .chart-summary-shell {
@@ -1822,6 +1869,10 @@ select {
     gap: 8px;
   }
 
+  .category-swipe-hint-mobile {
+    display: block;
+  }
+
   .category-pill {
     min-width: 132px;
     gap: 10px;
@@ -1843,6 +1894,10 @@ select {
   .commodity-rail-wrap {
     gap: 6px;
     padding: 0;
+  }
+
+  .commodity-rail-helper-desktop {
+    display: none;
   }
 
   .commodity-rail-head strong {
@@ -2090,6 +2145,82 @@ select {
     width: fit-content;
   }
 
+  .history-layout[data-chart-summary-layout="mobile"] {
+    grid-template-areas:
+      "summary"
+      "scroll"
+      "chart"
+      "note";
+    gap: 8px;
+  }
+
+  .history-layout[data-chart-summary-layout="mobile"] .chart-summary-shell {
+    grid-area: summary;
+  }
+
+  .history-layout[data-chart-summary-layout="mobile"] .chart-scroll-note {
+    grid-area: scroll;
+    margin: 0;
+  }
+
+  .history-layout[data-chart-summary-layout="mobile"] .history-chart-panel {
+    grid-area: chart;
+  }
+
+  .history-layout[data-chart-summary-layout="mobile"] .axis-note {
+    grid-area: note;
+  }
+
+  .history-layout[data-chart-summary-layout="mobile"] .chart-summary {
+    gap: 8px;
+    padding: 10px 12px;
+  }
+
+  .history-layout[data-chart-summary-layout="mobile"] .chart-summary-date {
+    gap: 8px;
+    align-items: center;
+  }
+
+  .history-layout[data-chart-summary-layout="mobile"] .chart-summary-date-label {
+    font-size: 12px;
+  }
+
+  .history-layout[data-chart-summary-layout="mobile"] .chart-summary-date-value {
+    font-size: 15px;
+  }
+
+  .history-layout[data-chart-summary-layout="mobile"] .chart-summary-metrics {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .history-layout[data-chart-summary-layout="mobile"] .chart-metric {
+    gap: 3px;
+    min-width: 0;
+    padding: 8px 6px;
+    border-radius: 16px;
+    width: 100%;
+  }
+
+  .history-layout[data-chart-summary-layout="mobile"] .chart-metric-label {
+    gap: 4px;
+    font-size: 10px;
+  }
+
+  .history-layout[data-chart-summary-layout="mobile"] .chart-metric-line {
+    width: 14px;
+  }
+
+  .history-layout[data-chart-summary-layout="mobile"] .chart-metric-value {
+    font-size: 15px;
+  }
+
+  .history-layout[data-chart-summary-layout="mobile"] .chart-metric-slot-modal {
+    grid-column: auto;
+    justify-self: stretch;
+    width: 100%;
+  }
+
   .filter-fab {
     right: 14px;
     bottom: 14px;
@@ -2130,6 +2261,12 @@ select {
 
   .filter-chip {
     padding: 5px 9px;
+  }
+}
+
+@media (min-width: 721px) {
+  .commodity-rail-helper-desktop {
+    display: block;
   }
 }
 

@@ -7,327 +7,327 @@
   "ui": {
     "app_title": {
       "en": "Namma Agri Prices",
-      "kn": ""
+      "kn": "ನಮ್ಮ ಅಗ್ರಿ ಪ್ರೈಸಸ್"
     },
     "home_intro": {
       "en": "Use the search bar to search for prices of commodities, markets, or varieties of your choice. Use filters to narrow down your search.",
-      "kn": ""
+      "kn": "ನಿಮ್ಮ ಆಯ್ಕೆಯ ಸರಕುಗಳು, ಮಾರುಕಟ್ಟೆಗಳು ಅಥವಾ ತಳಿಗಳ ಬೆಲೆಗಳನ್ನು ಹುಡುಕಲು ಹುಡುಕಾಟ ಪಟ್ಟಿಯನ್ನು ಬಳಸಿ. ನಿಮ್ಮ ಹುಡುಕಾಟವನ್ನು ಸುಗಮಗೊಳಿಸಲು ಫಿಲ್ಟರ್‌ಗಳನ್ನು ಬಳಸಿ."
     },
     "search_label": {
       "en": "Search commodities, markets, or varieties",
-      "kn": ""
+      "kn": "ಸರಕುಗಳು, ಮಾರುಕಟ್ಟೆಗಳು ಅಥವಾ ತಳಿಗಳನ್ನು ಹುಡುಕಿ"
     },
     "search_placeholder": {
       "en": "Try Tomato, Mysuru, or Local",
-      "kn": ""
+      "kn": "ಟೊಮೇಟೊ, ಮೈಸೂರು, ಅಥವಾ ಸ್ಥಳೀಯ ಎಂದು ಪ್ರಯತ್ನಿಸಿ"
     },
     "category_title": {
       "en": "Quick pick your commodity below.",
-      "kn": ""
+      "kn": "ನಿಮ್ಮ ಸರಕನ್ನು ಕೆಳಗೆ ತ್ವರಿತವಾಗಿ ಆಯ್ಕೆ ಮಾಡಿ."
     },
     "category_swipe_hint": {
       "en": "\u2190 Swipe to see all options \u2192",
-      "kn": ""
+      "kn": "\u2190 ಎಲ್ಲಾ ಆಯ್ಕೆಗಳನ್ನು ನೋಡಲು ಸ್ವೈಪ್ ಮಾಡಿ \u2192"
     },
     "category_fruits": {
       "en": "Fruits",
-      "kn": ""
+      "kn": "ಹಣ್ಣುಗಳು"
     },
     "category_vegetables": {
       "en": "Vegetables",
-      "kn": ""
+      "kn": "ತರಕಾರಿಗಳು"
     },
     "category_nuts_and_seeds": {
       "en": "Nuts and Seeds",
-      "kn": ""
+      "kn": "ಬೀಜಗಳು ಮತ್ತು ಧಾನ್ಯಗಳು"
     },
     "category_grains_and_pulses": {
       "en": "Grains and Pulses",
-      "kn": ""
+      "kn": "ಧಾನ್ಯಗಳು ಮತ್ತು ಬೇಳೆಕಾಳುಗಳು"
     },
     "category_miscellaneous": {
       "en": "Miscellaneous",
-      "kn": ""
+      "kn": "ಇತರೇ"
     },
     "map_title": {
       "en": "Tap on a district, then select the market.",
-      "kn": ""
+      "kn": "ಜಿಲ್ಲೆಯ ಮೇಲೆ ಟ್ಯಾಪ್ ಮಾಡಿ, ನಂತರ ಮಾರುಕಟ್ಟೆಯನ್ನು ಆಯ್ಕೆ ಮಾಡಿ."
     },
     "map_intro": {
       "en": "Selecting a market will show all commodities in that market.",
-      "kn": ""
+      "kn": "ಮಾರುಕಟ್ಟೆಯನ್ನು ಆಯ್ಕೆ ಮಾಡುವುದರಿಂದ ಆ ಮಾರುಕಟ್ಟೆಯಲ್ಲಿನ ಎಲ್ಲಾ ಸರಕುಗಳನ್ನು ತೋರಿಸಲಾಗುತ್ತದೆ."
     },
     "district_empty_title": {
       "en": "Select a district to view markets here",
-      "kn": ""
+      "kn": "ಮಾರುಕಟ್ಟೆಗಳನ್ನು ಇಲ್ಲಿ ವೀಕ್ಷಿಸಲು ಜಿಲ್ಲೆಯನ್ನು ಆಯ್ಕೆ ಮಾಡಿ"
     },
     "home_button": {
       "en": "Home",
-      "kn": ""
+      "kn": "ಮುಖಪುಟ"
     },
     "map_loading": {
       "en": "Loading Karnataka district map...",
-      "kn": ""
+      "kn": "ಕರ್ನಾಟಕ ಜಿಲ್ಲಾ ನಕ್ಷೆಯನ್ನು ಲೋಡ್ ಮಾಡಲಾಗುತ್ತಿದೆ..."
     },
     "results_intro_table": {
       "en": "Use the filters to narrow the list. Click any row to view the recent price trend for that exact commodity entry.",
-      "kn": ""
+      "kn": "ಪಟ್ಟಿಯನ್ನು ಸುಗಮಗೊಳಿಸಲು ಫಿಲ್ಟರ್‌ಗಳನ್ನು ಬಳಸಿ. ಆ ನಿರ್ದಿಷ್ಟ ಸರಕಿನ ಇತ್ತೀಚಿನ ಬೆಲೆಯ ಪ್ರವೃತ್ತಿಯನ್ನು ವೀಕ್ಷಿಸಲು ಯಾವುದೇ ಸಾಲಿನ ಮೇಲೆ ಕ್ಲಿಕ್ ಮಾಡಿ."
     },
     "results_intro_cards": {
       "en": "Use the filters to narrow the list. Expand any card to view the recent price trend for that exact commodity entry.",
-      "kn": ""
+      "kn": "ಪಟ್ಟಿಯನ್ನು ಸುಗಮಗೊಳಿಸಲು ಫಿಲ್ಟರ್‌ಗಳನ್ನು ಬಳಸಿ. ಆ ನಿರ್ದಿಷ್ಟ ಸರಕಿನ ಇತ್ತೀಚಿನ ಬೆಲೆಯ ಪ್ರವೃತ್ತಿಯನ್ನು ವೀಕ್ಷಿಸಲು ಯಾವುದೇ ಕಾರ್ಡ್ ಅನ್ನು ವಿಸ್ತರಿಸಿ."
     },
     "results_layout_aria": {
       "en": "Results layout",
-      "kn": ""
+      "kn": "ಫಲಿತಾಂಶಗಳ ಲೇಔಟ್"
     },
     "layout_cards": {
       "en": "Cards",
-      "kn": ""
+      "kn": "ಕಾರ್ಡ್‌ಗಳು"
     },
     "layout_table": {
       "en": "Table",
-      "kn": ""
+      "kn": "ಕೋಷ್ಟಕ"
     },
     "language_aria": {
       "en": "Language",
-      "kn": ""
+      "kn": "ಭಾಷೆ"
     },
     "language_english": {
       "en": "English",
-      "kn": ""
+      "kn": "ಇಂಗ್ಲಿಷ್"
     },
     "language_kannada": {
       "en": "Kannada",
-      "kn": ""
+      "kn": "ಕನ್ನಡ"
     },
     "zoom_in_aria": {
       "en": "Zoom in",
-      "kn": ""
+      "kn": "ದೊಡ್ಡದಾಗಿಸಿ (ಜೂಮ್ ಇನ್)"
     },
     "zoom_out_aria": {
       "en": "Zoom out",
-      "kn": ""
+      "kn": "ಸಣ್ಣದಾಗಿಸಿ (ಜೂಮ್ ಔಟ್)"
     },
     "map_controls_aria": {
       "en": "Map controls",
-      "kn": ""
+      "kn": "ನಕ್ಷೆಯ ನಿಯಂತ್ರಣಗಳು"
     },
     "reset": {
       "en": "Reset",
-      "kn": ""
+      "kn": "ಮರುಹೊಂದಿಸಿ"
     },
     "reset_map_aria": {
       "en": "Reset map",
-      "kn": ""
+      "kn": "ನಕ್ಷೆಯನ್ನು ಮರುಹೊಂದಿಸಿ"
     },
     "no_mapped_markets": {
       "en": "No mapped markets are available for this district in the current dataset.",
-      "kn": ""
+      "kn": "ಪ್ರಸ್ತುತ ಡೇಟಾಸೆಟ್‌ನಲ್ಲಿ ಈ ಜಿಲ್ಲೆಗೆ ಯಾವುದೇ ಮಾರುಕಟ್ಟೆಗಳು ಲಭ್ಯವಿಲ್ಲ."
     },
     "market_label_singular": {
       "en": "market",
-      "kn": ""
+      "kn": "ಮಾರುಕಟ್ಟೆ"
     },
     "market_label_plural": {
       "en": "markets",
-      "kn": ""
+      "kn": "ಮಾರುಕಟ್ಟೆಗಳು"
     },
     "mapped_to_this_district": {
       "en": "mapped to this district.",
-      "kn": ""
+      "kn": "ಈ ಜಿಲ್ಲೆಗೆ ಒಳಪಡುತ್ತವೆ."
     },
     "field_commodity": {
       "en": "Commodity",
-      "kn": ""
+      "kn": "ಸರಕು"
     },
     "field_market": {
       "en": "Market",
-      "kn": ""
+      "kn": "ಮಾರುಕಟ್ಟೆ"
     },
     "field_variety": {
       "en": "Variety",
-      "kn": ""
+      "kn": "ತಳಿ"
     },
     "field_grade": {
       "en": "Grade",
-      "kn": ""
+      "kn": "ದರ್ಜೆ"
     },
     "suggestion_meta_commodity": {
       "en": "Opens commodity results",
-      "kn": ""
+      "kn": "ಸರಕಿನ ಫಲಿತಾಂಶಗಳನ್ನು ತೆರೆಯುತ್ತದೆ"
     },
     "suggestion_meta_market": {
       "en": "Opens market results",
-      "kn": ""
+      "kn": "ಮಾರುಕಟ್ಟೆಯ ಫಲಿತಾಂಶಗಳನ್ನು ತೆರೆಯುತ್ತದೆ"
     },
     "suggestion_meta_variety": {
       "en": "Opens variety results",
-      "kn": ""
+      "kn": "ತಳಿಯ ಫಲಿತಾಂಶಗಳನ್ನು ತೆರೆಯುತ್ತದೆ"
     },
     "filter_open_aria": {
       "en": "Open filters",
-      "kn": ""
+      "kn": "ಫಿಲ್ಟರ್‌ಗಳನ್ನು ತೆರೆಯಿರಿ"
     },
     "filter_fab_label": {
       "en": "Use filters here",
-      "kn": ""
+      "kn": "ಇಲ್ಲಿ ಫಿಲ್ಟರ್‌ಗಳನ್ನು ಬಳಸಿ"
     },
     "filters_label": {
       "en": "Filters",
-      "kn": ""
+      "kn": "ಫಿಲ್ಟರ್‌ಗಳು"
     },
     "refine_results": {
       "en": "Refine results",
-      "kn": ""
+      "kn": "ಫಲಿತಾಂಶಗಳನ್ನು ಪರಿಷ್ಕರಿಸಿ"
     },
     "close_filters_aria": {
       "en": "Close filters",
-      "kn": ""
+      "kn": "ಫಿಲ್ಟರ್‌ಗಳನ್ನು ಮುಚ್ಚಿ"
     },
     "clear_filters": {
       "en": "Clear Filters",
-      "kn": ""
+      "kn": "ಫಿಲ್ಟರ್‌ಗಳನ್ನು ತೆರವುಗೊಳಿಸಿ"
     },
     "apply_filters": {
       "en": "Apply Filters",
-      "kn": ""
+      "kn": "ಫಿಲ್ಟರ್‌ಗಳನ್ನು ಅನ್ವಯಿಸಿ"
     },
     "filter_suffix": {
       "en": "filter",
-      "kn": ""
+      "kn": "ಫಿಲ್ಟರ್"
     },
     "remove_value_prefix": {
       "en": "Remove",
-      "kn": ""
+      "kn": "ತೆಗೆದುಹಾಕಿ"
     },
     "all_varieties": {
       "en": "All varieties",
-      "kn": ""
+      "kn": "ಎಲ್ಲಾ ತಳಿಗಳು"
     },
     "all_commodities": {
       "en": "All commodities",
-      "kn": ""
+      "kn": "ಎಲ್ಲಾ ಸರಕುಗಳು"
     },
     "all_markets": {
       "en": "All markets",
-      "kn": ""
+      "kn": "ಎಲ್ಲಾ ಮಾರುಕಟ್ಟೆಗಳು"
     },
     "all_fallback_prefix": {
       "en": "All",
-      "kn": ""
+      "kn": "ಎಲ್ಲಾ"
     },
     "type_to_search": {
       "en": "Type to search",
-      "kn": ""
+      "kn": "ಹುಡುಕಲು ಟೈಪ್ ಮಾಡಿ"
     },
     "no_matching_options": {
       "en": "No matching options.",
-      "kn": ""
+      "kn": "ಯಾವುದೇ ಹೊಂದಾಣಿಕೆಯ ಆಯ್ಕೆಗಳಿಲ್ಲ."
     },
     "loading_rows": {
       "en": "Loading rows...",
-      "kn": ""
+      "kn": "ಸಾಲನ್ನು ಲೋಡ್ ಮಾಡಲಾಗುತ್ತಿದೆ..."
     },
     "no_rows_match": {
       "en": "No rows match the current combination. The filter options stay constrained to valid combinations only, so clearing filters should broaden the result set.",
-      "kn": ""
+      "kn": "ಪ್ರಸ್ತುತ ಸಂಯೋಜನೆಗೆ ಯಾವುದೇ ಸಾಲುಗಳು ಹೊಂದಾಣಿಕೆಯಾಗುತ್ತಿಲ್ಲ. ಫಿಲ್ಟರ್ ಆಯ್ಕೆಗಳು ಕೇವಲ ಮಾನ್ಯ ಸಂಯೋಜನೆಗಳಿಗೆ ಸೀಮಿತವಾಗಿರುತ್ತವೆ, ಆದ್ದರಿಂದ ಫಿಲ್ಟರ್‌ಗಳನ್ನು ತೆರವುಗೊಳಿಸುವುದರಿಂದ ಹೆಚ್ಚಿನ ಫಲಿತಾಂಶಗಳು ದೊರೆಯಬಹುದು."
     },
     "arrivals_units_header": {
       "en": "Arrivals & Units",
-      "kn": ""
+      "kn": "ಆವಕ ಮತ್ತು ಘಟಕಗಳು"
     },
     "max_price_rs": {
       "en": "Max Price (Rs.)",
-      "kn": ""
+      "kn": "ಗರಿಷ್ಠ ಬೆಲೆ (ರೂ.)"
     },
     "min_price_rs": {
       "en": "Min Price (Rs.)",
-      "kn": ""
+      "kn": "ಕನಿಷ್ಠ ಬೆಲೆ (ರೂ.)"
     },
     "modal_price_rs": {
       "en": "Modal Price (Rs.)",
-      "kn": ""
+      "kn": "ಮಾದರಿ ಬೆಲೆ (ರೂ.)"
     },
     "latest_update": {
       "en": "Latest Update",
-      "kn": ""
+      "kn": "ಇತ್ತೀಚಿನ ಅಪ್ಡೇಟ್"
     },
     "previous_update": {
       "en": "Previous Update",
-      "kn": ""
+      "kn": "ಹಿಂದಿನ ಅಪ್ಡೇಟ್"
     },
     "arrivals_and_units": {
       "en": "Arrivals And Units",
-      "kn": ""
+      "kn": "ಆವಕ ಮತ್ತು ಘಟಕಗಳು"
     },
     "price_updates": {
       "en": "Price Updates",
-      "kn": ""
+      "kn": "ಬೆಲೆ ಅಪ್ಡೇಟ್‌ಗಳು"
     },
     "latest": {
       "en": "Latest",
-      "kn": ""
+      "kn": "ಇತ್ತೀಚಿನ"
     },
     "previous": {
       "en": "Previous",
-      "kn": ""
+      "kn": "ಹಿಂದಿನ"
     },
     "see_price_history": {
       "en": "See Price History",
-      "kn": ""
+      "kn": "ಬೆಲೆ ಇತಿಹಾಸವನ್ನು ನೋಡಿ"
     },
     "no_earlier_update": {
       "en": "No earlier update",
-      "kn": ""
+      "kn": "ಯಾವುದೇ ಹಿಂದಿನ ಅಪ್ಡೇಟ್ ಇಲ್ಲ"
     },
     "chart_scroll_note": {
       "en": "<-- Scroll horizontally to see all dates -->",
-      "kn": ""
+      "kn": "<-- ಎಲ್ಲಾ ದಿನಾಂಕಗಳನ್ನು ನೋಡಲು ಅಡ್ಡಲಾಗಿ ಸ್ಕ್ರಾಲ್ ಮಾಡಿ -->"
     },
     "trend_note": {
       "en": "Trend is shown for this exact commodity, market, variety, and grade combination.",
-      "kn": ""
+      "kn": "ಈ ನಿರ್ದಿಷ್ಟ ಸರಕು, ಮಾರುಕಟ್ಟೆ, ತಳಿ ಮತ್ತು ದರ್ಜೆಯ ಸಂಯೋಜನೆಗಾಗಿ ಪ್ರವೃತ್ತಿಯನ್ನು ತೋರಿಸಲಾಗಿದೆ."
     },
     "collapse_price_history_aria": {
       "en": "Collapse price history",
-      "kn": ""
+      "kn": "ಬೆಲೆ ಇತಿಹಾಸವನ್ನು ಮರೆಮಾಡಿ"
     },
     "price_history_aria": {
       "en": "Price history",
-      "kn": ""
+      "kn": "ಬೆಲೆ ಇತಿಹಾಸ"
     },
     "selected_date": {
       "en": "Selected Date",
-      "kn": ""
+      "kn": "ಆಯ್ಕೆ ಮಾಡಿದ ದಿನಾಂಕ"
     },
     "max_short": {
       "en": "Max",
-      "kn": ""
+      "kn": "ಗರಿಷ್ಠ"
     },
     "min_short": {
       "en": "Min",
-      "kn": ""
+      "kn": "ಕನಿಷ್ಠ"
     },
     "modal_short": {
       "en": "Modal",
-      "kn": ""
+      "kn": "ಮಾದರಿ"
     },
     "no_historical_points": {
       "en": "No historical points are available inside the required time window.",
-      "kn": ""
+      "kn": "ಅಗತ್ಯವಿರುವ ಸಮಯದ ಚೌಕಟ್ಟಿನೊಳಗೆ ಯಾವುದೇ ಹಳೆಯ ಡೇಟಾ ಲಭ್ಯವಿಲ್ಲ."
     },
     "only_one_price_point_prefix": {
       "en": "Only one price point is available on",
-      "kn": ""
+      "kn": "ಈ ದಿನಾಂಕದಂದು ಕೇವಲ ಒಂದು ಬೆಲೆಯ ಡೇಟಾ ಮಾತ್ರ ಲಭ್ಯವಿದೆ:"
     },
     "open_market_results_prefix": {
       "en": "Open",
-      "kn": ""
+      "kn": "ತೆರೆಯಿರಿ"
     },
     "open_market_results_suffix": {
       "en": "market results",
-      "kn": ""
+      "kn": "ಮಾರುಕಟ್ಟೆ ಫಲಿತಾಂಶಗಳು"
     }
   },
   "commodities": {
@@ -841,7 +841,7 @@
     },
     "Tur": {
       "en": "Tur",
-      "kn": ""
+      "kn": "ತೊಗರಿ"
     },
     "Tur Dal": {
       "en": "Tur Dal",

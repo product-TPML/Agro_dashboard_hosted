@@ -601,13 +601,14 @@
 
     const scale = direction > 0 ? 0.82 : 1.18;
     state.mapViewBox = scaleMapViewBox(currentViewBox, scale);
-    scheduleRender();
+    applyCurrentMapViewBox(document.querySelector(".map-canvas svg"));
+    syncMapControlsUi(document.querySelector("[data-map-viewport]"));
   }
 
   function resetMapViewport() {
     state.mapViewBox = state.mapBaseViewBox ? [...state.mapBaseViewBox] : null;
     state.activeMapDistrictSlug = "";
-    scheduleRender();
+    syncMapUi();
   }
 
   function focusMapRegion(bounds, districtSlug) {
@@ -627,7 +628,7 @@
 
     state.mapViewBox = constrainMapViewBox(nextViewBox);
     state.activeMapDistrictSlug = districtSlug || "";
-    scheduleRender();
+    syncMapUi();
   }
 
   function openFilterModal() {
@@ -1161,7 +1162,7 @@
         <div class="category-panel-head">
           <div>
             <h3>${escapeHtml(getUiText("category_title"))}</h3>
-            <p class="muted category-swipe-hint">${escapeHtml(getUiText("category_swipe_hint"))}</p>
+            <p class="muted category-swipe-hint category-swipe-hint-mobile">${escapeHtml(getUiText("category_swipe_hint"))}</p>
           </div>
         </div>
 
@@ -1186,6 +1187,7 @@
         </div>
 
         <div class="commodity-rail-wrap">
+          <p class="muted commodity-rail-helper-desktop">${escapeHtml(getUiText("commodity_scroll_hint_desktop", "\u2190 Scroll to see all options \u2192"))}</p>
           <div class="commodity-rail-meta">
             <span class="commodity-rail-count">${formatCountLabel(activeCategory.commodityCount, "commodity", "commodities")}</span>
           </div>
@@ -1258,10 +1260,12 @@
           <div class="map-controls map-controls-overlay" aria-label="${escapeAttribute(getUiText("map_controls_aria", "Map controls"))}">
             <button type="button" class="map-control-button map-control-icon" data-map-zoom="in" aria-label="${escapeAttribute(getUiText("zoom_in_aria", "Zoom in"))}">+</button>
             <button type="button" class="map-control-button map-control-icon" data-map-zoom="out" aria-label="${escapeAttribute(getUiText("zoom_out_aria", "Zoom out"))}">-</button>
-            ${showResetControl ? `<button type="button" class="map-control-button map-control-icon map-control-reset-inline" data-map-reset="true" aria-label="${escapeAttribute(getUiText("reset_map_aria", "Reset map"))}">&times;</button>` : ""}
+            <button type="button" class="map-control-button map-control-icon map-control-reset-inline" data-map-reset="true" aria-label="${escapeAttribute(getUiText("reset_map_aria", "Reset map"))}"${showResetControl ? "" : " hidden"}>&times;</button>
           </div>
         </div>
-        ${renderActiveDistrictPanel()}
+        <div data-map-district-panel-shell="true">
+          ${renderActiveDistrictPanel()}
+        </div>
       </div>
     `;
   }
@@ -1877,13 +1881,13 @@
     return `
       <section class="history-card">
         <div class="chart-shell">
-          <p class="chart-scroll-note">${escapeHtml(getUiText("chart_scroll_note", "<-- Scroll horizontally to see all dates -->"))}</p>
           <div class="history-layout">
-            <div class="history-chart-panel">
-              ${renderChart(historyRows, activePoint, row.rowKey)}
-            </div>
             <div class="chart-summary-shell">
               ${renderChartSummary(activePoint)}
+            </div>
+            <p class="chart-scroll-note">${escapeHtml(getUiText("chart_scroll_note", "<-- Scroll horizontally to see all dates -->"))}</p>
+            <div class="history-chart-panel">
+              ${renderChart(historyRows, activePoint, row.rowKey)}
             </div>
             <div class="axis-note">${escapeHtml(getUiText("trend_note", "Trend is shown for this exact commodity, market, variety, and grade combination."))}</div>
           </div>
@@ -1902,27 +1906,30 @@
       return `<p class="muted">${escapeHtml(getUiText("no_historical_points", "No historical points are available inside the required time window."))}</p>`;
     }
 
-    if (rows.length === 1) {
-      const point = rows[0];
-      return `
-        <div class="footer-note">
-          ${escapeHtml(getUiText("only_one_price_point_prefix", "Only one price point is available on"))} ${escapeHtml(formatDateFull(point.reportDate))}.
-          ${escapeHtml(getUiText("min_short", "Min"))}: ${formatCurrency(point.minPrice)},
-          ${escapeHtml(getUiText("max_short", "Max"))}: ${formatCurrency(point.maxPrice)},
-          ${escapeHtml(getUiText("modal_short", "Modal"))}: ${formatCurrency(point.modalPrice)}.
-        </div>
-      `;
-    }
-
     const axisWidth = 25;
-    const width = Math.max(700, 120 + (rows.length - 1) * 96);
+    const chartRows = rows.length === 1
+      ? [
+          {
+            reportDate: rows[0].reportDate,
+            minPrice: 0,
+            maxPrice: 0,
+            modalPrice: 0,
+            isBaseline: true,
+          },
+          {
+            ...rows[0],
+            isBaseline: false,
+          },
+        ]
+      : rows.map((row) => ({ ...row, isBaseline: false }));
+    const width = Math.max(700, 120 + (chartRows.length - 1) * 96);
     const height = 320;
     const paddingX = 38;
     const paddingTop = 18;
     const paddingBottom = 44;
-    const values = rows.flatMap((row) => [row.minPrice, row.maxPrice, row.modalPrice]);
+    const values = chartRows.flatMap((row) => [row.minPrice, row.maxPrice, row.modalPrice]);
     const chartScale = buildChartScale(values);
-    const xStep = (width - paddingX * 2) / Math.max(rows.length - 1, 1);
+    const xStep = (width - paddingX * 2) / Math.max(chartRows.length - 1, 1);
 
     const toX = (index) => paddingX + xStep * index;
     const toY = (value) => {
@@ -1930,13 +1937,13 @@
       return height - paddingBottom - normalized * (height - paddingTop - paddingBottom);
     };
 
-    const minPath = buildLinePath(rows.map((row, index) => [toX(index), toY(row.minPrice)]));
-    const maxPath = buildLinePath(rows.map((row, index) => [toX(index), toY(row.maxPrice)]));
-    const modalPath = buildLinePath(rows.map((row, index) => [toX(index), toY(row.modalPrice)]));
-    const activeIndex = rows.findIndex((row) => row.reportDate === activePoint.reportDate);
+    const minPath = buildLinePath(chartRows.map((row, index) => [toX(index), toY(row.minPrice)]));
+    const maxPath = buildLinePath(chartRows.map((row, index) => [toX(index), toY(row.maxPrice)]));
+    const modalPath = buildLinePath(chartRows.map((row, index) => [toX(index), toY(row.modalPrice)]));
+    const activeIndex = chartRows.findIndex((row) => !row.isBaseline && row.reportDate === activePoint.reportDate);
     const activeX = toX(activeIndex);
-    const labels = rows.map((row, index) => `
-      <text x="${toX(index)}" y="${height - 12}" text-anchor="middle" fill="#5b6654" font-size="12">${escapeHtml(formatDateShort(row.reportDate))}</text>
+    const labels = chartRows.map((row, index) => `
+      <text x="${toX(index)}" y="${height - 12}" text-anchor="middle" fill="#5b6654" font-size="12">${row.isBaseline ? "" : escapeHtml(formatDateShort(row.reportDate))}</text>
     `).join("");
 
     const yAxisTicks = chartScale.ticks.map((tick) => {
@@ -1954,14 +1961,14 @@
       return `<line x1="${paddingX}" y1="${y}" x2="${width - paddingX}" y2="${y}" stroke="${tick === 0 ? "#cfd5e3" : "#e8ebf3"}" stroke-width="${tick === 0 ? "1.6" : "1"}" />`;
     }).join("");
 
-    const pointTargets = rows.map((row, index) => {
+    const pointTargets = chartRows.map((row, index) => {
       const x = toX(index);
       const maxY = toY(row.maxPrice);
       const minY = toY(row.minPrice);
       const modalY = toY(row.modalPrice);
-      const isActive = row.reportDate === activePoint.reportDate;
+      const isActive = !row.isBaseline && row.reportDate === activePoint.reportDate;
       return `
-        <g data-chart-date="${escapeAttribute(row.reportDate)}" class="chart-point-group ${isActive ? "is-active" : ""}">
+        <g${row.isBaseline ? "" : ` data-chart-date="${escapeAttribute(row.reportDate)}"`} class="chart-point-group ${isActive ? "is-active" : ""} ${row.isBaseline ? "is-baseline" : ""}">
           <line x1="${x}" y1="${paddingTop}" x2="${x}" y2="${height - paddingBottom}" stroke="${isActive ? "#adb7d8" : "transparent"}" stroke-dasharray="5 5" />
           ${renderChartPointCircle(x, maxY, PRICE_COLORS.max, isActive)}
           ${renderChartPointCircle(x, minY, PRICE_COLORS.min, isActive)}
@@ -1987,7 +1994,7 @@
           data-chart-initial-position="right"
           data-chart-active-x="${activeX}"
           data-chart-x-step="${xStep}"
-          data-chart-point-count="${rows.length}"
+          data-chart-point-count="${chartRows.length}"
         >
           <svg viewBox="0 0 ${width} ${height}" width="${width}" height="${height}" role="img" aria-label="${escapeAttribute(getUiText("price_history_aria", "Price history"))}" data-chart-root="true">
             ${gridLines}
@@ -2222,17 +2229,23 @@
       });
     });
 
-    document.querySelectorAll("[data-map-market]").forEach((button) => {
-      if (button.tagName.toLowerCase() !== "button") {
+    bindMapMarketButtons(document);
+
+    wireMapInteractions();
+  }
+
+  function bindMapMarketButtons(root) {
+    root.querySelectorAll("[data-map-market]").forEach((button) => {
+      if (button.tagName.toLowerCase() !== "button" || button.dataset.boundMapMarket === "true") {
         return;
       }
+
+      button.dataset.boundMapMarket = "true";
       button.addEventListener("click", (event) => {
         event.stopPropagation();
         handleMapMarketSelect(button.dataset.mapMarket);
       });
     });
-
-    wireMapInteractions();
   }
 
   function bindSuggestionEvents() {
@@ -2960,8 +2973,8 @@
         nextWidth,
         nextHeight,
       ]);
-      rootSvg.setAttribute("viewBox", formatViewBox(getCurrentMapViewBox()));
-      scheduleRender();
+      applyCurrentMapViewBox(rootSvg);
+      syncMapControlsUi(viewport);
     }, { passive: false });
 
     viewport.addEventListener("pointerdown", (event) => {
@@ -3010,7 +3023,7 @@
         start[3],
       ]);
       mapGesture.didMove = mapGesture.didMove || Math.abs(event.clientX - mapGesture.panStartClient.x) > 5 || Math.abs(event.clientY - mapGesture.panStartClient.y) > 5;
-      rootSvg.setAttribute("viewBox", formatViewBox(getCurrentMapViewBox()));
+      applyCurrentMapViewBox(rootSvg);
     });
 
     viewport.addEventListener("pointerup", finalizePointerPan);
@@ -3071,7 +3084,8 @@
           nextHeight,
         ]);
         mapGesture.didMove = true;
-        rootSvg.setAttribute("viewBox", formatViewBox(getCurrentMapViewBox()));
+        applyCurrentMapViewBox(rootSvg);
+        syncMapControlsUi(viewport);
         return;
       }
 
@@ -3089,7 +3103,7 @@
           start[3],
         ]);
         mapGesture.didMove = mapGesture.didMove || Math.abs(touch.clientX - mapGesture.panStartClient.x) > 5 || Math.abs(touch.clientY - mapGesture.panStartClient.y) > 5;
-        rootSvg.setAttribute("viewBox", formatViewBox(getCurrentMapViewBox()));
+        applyCurrentMapViewBox(rootSvg);
       }
     }, { passive: false });
 
@@ -3104,7 +3118,6 @@
 
     if (mapGesture.didMove) {
       mapGesture.suppressClickUntil = Date.now() + 250;
-      scheduleRender();
     }
 
     mapGesture.pointerId = null;
@@ -3121,7 +3134,6 @@
 
     if (mapGesture.didMove) {
       mapGesture.suppressClickUntil = Date.now() + 300;
-      scheduleRender();
     }
 
     if (event.touches.length === 1 && isMapZoomedIn()) {
@@ -3235,6 +3247,71 @@
 
   function formatViewBox(viewBox) {
     return viewBox.map((value) => Number(value.toFixed(2))).join(" ");
+  }
+
+  function applyCurrentMapViewBox(rootSvg) {
+    const currentViewBox = getCurrentMapViewBox();
+    if (!rootSvg || !currentViewBox) {
+      return;
+    }
+
+    rootSvg.setAttribute("viewBox", formatViewBox(currentViewBox));
+  }
+
+  function syncMapUi() {
+    if (state.route.view !== "home") {
+      return;
+    }
+
+    const viewport = document.querySelector("[data-map-viewport]");
+    const rootSvg = document.querySelector(".map-canvas svg");
+    if (!viewport || !rootSvg) {
+      return;
+    }
+
+    applyCurrentMapViewBox(rootSvg);
+    syncMapDistrictStyles(rootSvg);
+    const pathLookup = buildMapPathLookup(rootSvg);
+    renderDistrictLabels(rootSvg, pathLookup);
+    renderActiveDistrictOutline(rootSvg, pathLookup);
+    renderMarketPins(rootSvg, pathLookup);
+    syncMapControlsUi(viewport);
+    syncMapDistrictPanelUi();
+  }
+
+  function syncMapDistrictStyles(rootSvg) {
+    rootSvg.querySelectorAll(".map-region[data-district-slug]").forEach((path) => {
+      const isActive = path.dataset.districtSlug === state.activeMapDistrictSlug;
+      styleMapDistrictPath(path, isActive);
+      path.classList.toggle("is-active", isActive);
+    });
+  }
+
+  function buildMapPathLookup(rootSvg) {
+    const pathLookup = new Map();
+    rootSvg.querySelectorAll(".map-region[data-district-slug]").forEach((path) => {
+      pathLookup.set(path.dataset.districtSlug, path);
+    });
+    return pathLookup;
+  }
+
+  function syncMapControlsUi(viewport) {
+    const resetButton = viewport ? viewport.querySelector("[data-map-reset]") : null;
+    if (!resetButton) {
+      return;
+    }
+
+    resetButton.hidden = !hasActiveMapViewport();
+  }
+
+  function syncMapDistrictPanelUi() {
+    const panelShell = document.querySelector("[data-map-district-panel-shell]");
+    if (!panelShell) {
+      return;
+    }
+
+    panelShell.innerHTML = renderActiveDistrictPanel();
+    bindMapMarketButtons(panelShell);
   }
 
   function clientToRatio(clientX, clientY, rect) {
