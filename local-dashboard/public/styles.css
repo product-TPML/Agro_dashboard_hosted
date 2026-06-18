@@ -460,22 +460,46 @@ select {
   flex-wrap: wrap;
 }
 
+.map-controls-overlay {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 4;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+  flex-wrap: nowrap;
+}
+
 .map-control-button {
   border: 1px solid var(--line);
   border-radius: 999px;
-  background: var(--panel-soft);
+  background: rgba(255, 253, 251, 0.96);
   color: var(--accent-strong);
   padding: 10px 14px;
   font-weight: 700;
   cursor: pointer;
+  box-shadow: 0 10px 24px rgba(22, 26, 50, 0.12);
+  pointer-events: auto;
 }
 
 .map-control-button:hover {
   background: var(--panel-alt);
 }
 
-.map-control-reset {
-  min-width: 88px;
+.map-control-icon {
+  width: 52px;
+  height: 52px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  line-height: 1;
+}
+
+.map-control-reset-inline {
+  font-size: 30px;
 }
 
 .map-viewer {
@@ -1888,6 +1912,18 @@ select {
 
   .map-card h3 {
     font-size: 22px;
+  }
+
+  .map-controls-overlay {
+    top: 12px;
+    right: 12px;
+    gap: 10px;
+  }
+
+  .map-control-icon {
+    width: 46px;
+    height: 46px;
+    font-size: 24px;
   }
 
   .map-card .muted,

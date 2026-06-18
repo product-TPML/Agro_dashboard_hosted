@@ -284,12 +284,19 @@
     return layout === "table" ? "table" : "cards";
   }
 
+  function getDefaultResultsLayout() {
+    return isCompactViewport() ? "cards" : "table";
+  }
+
   function parseRoute() {
     const params = new URLSearchParams(window.location.search);
     const view = params.get("view") === "table" ? "table" : "home";
+    const layoutParam = params.get("layout");
     return {
       view,
-      layout: view === "table" ? normalizeResultsLayout(params.get("layout")) : "cards",
+      layout: view === "table"
+        ? normalizeResultsLayout(layoutParam || getDefaultResultsLayout())
+        : "cards",
       type: params.get("type") || "",
       commodity: params.get("commodity") || "",
       market: params.get("market") || "",
@@ -553,7 +560,7 @@
   function handleSuggestionSelect(result) {
     const route = {
       view: "table",
-      layout: state.route.view === "table" ? normalizeResultsLayout(state.route.layout) : "cards",
+      layout: state.route.view === "table" ? normalizeResultsLayout(state.route.layout) : getDefaultResultsLayout(),
       type: result.type,
       commodity: result.commodity || "",
       market: result.market || "",
@@ -578,7 +585,7 @@
   function handleMapMarketSelect(market) {
     navigate({
       view: "table",
-      layout: "cards",
+      layout: getDefaultResultsLayout(),
       type: "market",
       commodity: "",
       market,
@@ -600,6 +607,7 @@
   function resetMapViewport() {
     state.mapViewBox = state.mapBaseViewBox ? [...state.mapBaseViewBox] : null;
     state.activeMapDistrictSlug = "";
+    scheduleRender();
   }
 
   function focusMapRegion(bounds, districtSlug) {
@@ -731,6 +739,20 @@
 
   function getActiveResultsLayout() {
     return normalizeResultsLayout(state.route.layout);
+  }
+
+  function isCompactViewport() {
+    return window.innerWidth <= 720;
+  }
+
+  function hasActiveMapViewport() {
+    if (state.activeMapDistrictSlug) {
+      return true;
+    }
+    if (!state.mapBaseViewBox || !state.mapViewBox) {
+      return false;
+    }
+    return state.mapViewBox.some((value, index) => Math.abs(value - state.mapBaseViewBox[index]) > 0.05);
   }
 
   function getRowsForCurrentView() {
@@ -1226,16 +1248,17 @@
   }
 
   function renderMapPanel() {
+    const showResetControl = hasActiveMapViewport();
     return `
       <div class="map-widget">
-        <div class="map-controls">
-          <button type="button" class="map-control-button" data-map-zoom="in" aria-label="${escapeAttribute(getUiText("zoom_in_aria", "Zoom in"))}">+</button>
-          <button type="button" class="map-control-button" data-map-zoom="out" aria-label="${escapeAttribute(getUiText("zoom_out_aria", "Zoom out"))}">-</button>
-          <button type="button" class="map-control-button map-control-reset" data-map-reset="true">${escapeHtml(getUiText("reset", "Reset"))}</button>
-        </div>
         <div class="map-placeholder map-viewer" data-map-viewport="true">
           <div class="map-canvas" data-map-canvas="true">
             ${state.mapSvgMarkup || `<p>${escapeHtml(getUiText("map_loading"))}</p>`}
+          </div>
+          <div class="map-controls map-controls-overlay" aria-label="${escapeAttribute(getUiText("map_controls_aria", "Map controls"))}">
+            <button type="button" class="map-control-button map-control-icon" data-map-zoom="in" aria-label="${escapeAttribute(getUiText("zoom_in_aria", "Zoom in"))}">+</button>
+            <button type="button" class="map-control-button map-control-icon" data-map-zoom="out" aria-label="${escapeAttribute(getUiText("zoom_out_aria", "Zoom out"))}">-</button>
+            ${showResetControl ? `<button type="button" class="map-control-button map-control-icon map-control-reset-inline" data-map-reset="true" aria-label="${escapeAttribute(getUiText("reset_map_aria", "Reset map"))}">&times;</button>` : ""}
           </div>
         </div>
         ${renderActiveDistrictPanel()}
@@ -1352,7 +1375,7 @@
   function handleHomeCommoditySelect(commodity) {
     navigate({
       view: "table",
-      layout: "cards",
+      layout: getDefaultResultsLayout(),
       type: "commodity",
       commodity,
       market: "",
@@ -2196,7 +2219,6 @@
     document.querySelectorAll("[data-map-reset]").forEach((button) => {
       button.addEventListener("click", () => {
         resetMapViewport();
-        render();
       });
     });
 
@@ -2915,6 +2937,11 @@
 
   function bindMapGestures(viewport, rootSvg) {
     viewport.addEventListener("wheel", (event) => {
+      const shouldHandleWheelZoom = !isCompactViewport() || event.ctrlKey;
+      if (!shouldHandleWheelZoom) {
+        return;
+      }
+
       event.preventDefault();
       const currentViewBox = getCurrentMapViewBox();
       if (!currentViewBox) {
@@ -2934,6 +2961,7 @@
         nextHeight,
       ]);
       rootSvg.setAttribute("viewBox", formatViewBox(getCurrentMapViewBox()));
+      scheduleRender();
     }, { passive: false });
 
     viewport.addEventListener("pointerdown", (event) => {
@@ -2945,7 +2973,7 @@
       const isInteractiveTarget = Boolean(
         target
         && typeof target.closest === "function"
-        && target.closest(".map-region, .market-marker")
+        && target.closest(".map-region, .market-marker, .map-controls-overlay, .map-control-button")
       );
 
       if (event.button !== 0 || !isMapZoomedIn() || isInteractiveTarget) {
@@ -3076,6 +3104,7 @@
 
     if (mapGesture.didMove) {
       mapGesture.suppressClickUntil = Date.now() + 250;
+      scheduleRender();
     }
 
     mapGesture.pointerId = null;
@@ -3092,6 +3121,7 @@
 
     if (mapGesture.didMove) {
       mapGesture.suppressClickUntil = Date.now() + 300;
+      scheduleRender();
     }
 
     if (event.touches.length === 1 && isMapZoomedIn()) {

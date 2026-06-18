@@ -99,7 +99,7 @@ If the workbook changes, the database is rebuilt from scratch.
   Client-side dashboard logic, routing, search, category rails, custom filter dropdowns, card rendering, inline history, and map interactions.
 
 - `local-dashboard/public/translations.json`
-  Active translation source for commodity, market, and variety labels in English and Kannada.
+  Unified translation source for UI copy plus commodity, market, and variety labels in English and Kannada, with English fallback when Kannada entries are blank or missing.
 
 - `package.json`
   Contains both `build:static-db` and `dashboard:local`.
@@ -273,6 +273,12 @@ Variety results are always shown in the form:
 
 There is one shared results view with pre-applied context.
 
+Default layout behavior:
+
+- desktop opens results in `table` view by default
+- mobile opens results in `cards` view by default
+- users can still switch layouts manually after arrival
+
 #### Commodity search
 
 - locked heading: commodity
@@ -376,6 +382,7 @@ The results UI also currently uses:
 - tighter mobile padding than the earlier prototype
 - only locked context chips at the top of the results view, with no duplicate black heading text
 - a top-left `Home` button beside the language toggle area
+- desktop-first `table` default with mobile-first `cards` default on first arrival
 - a floating filter action button with an onboarding hint animation
 
 For each result card, the price block also shows the absolute change from the previous comparable update for the exact:
@@ -496,6 +503,8 @@ Implemented and working:
 - district click-to-zoom using SVG `viewBox` focus
 - manual map panning inside the map container
 - touch pinch-to-zoom and wheel-based zoom adjustments on the map
+- mobile pinch-to-zoom inside the map container
+- desktop wheel-based zoom inside the map container without requiring a prior button click
 - district-scoped market pins rendered inside the selected district
 - market pin click -> market table route
 - mobile-friendly stacked layout for home and results pages
@@ -503,6 +512,7 @@ Implemented and working:
 - chart horizontal scroll preserved when selecting a different chart point
 - local district and market geography used by the home-screen map
 - English/Kannada toggle persisted in browser storage
+- unified translation JSON for screen copy plus entity labels, with English fallback when Kannada UI entries are not yet filled
 - translated commodity, market, and variety labels across suggestions, headings, filters, table cells, history titles, map market labels, and home commodity chips
 - translated category labels across the home category rail
 - bilingual search matching so Kannada and English input both resolve while results render in the active language
@@ -591,12 +601,15 @@ The map now supports:
 - district click
 - district zoom
 - manual panning inside the map viewport
-- touch pinch zoom and pointer/wheel zoom without changing the existing district-selection flow
+- touch pinch zoom and touch drag inside the map viewport
+- desktop wheel zoom inside the map viewport
+- desktop mouse drag panning once zoomed in
 - market-pin generation from `market_district_mapping`
 - in-SVG labeled market markers placed from district geometry sampling
 - market pin click -> market table navigation
 - direct district-path click handling on the integrated SVG asset
-- zoom in / zoom out / reset controls based on the active SVG `viewBox`
+- in-map top-right zoom in / zoom out controls
+- an in-map reset `×` control that only appears after the map leaves its default viewport, whether by district selection or manual zoom
 
 Current source limitation:
 

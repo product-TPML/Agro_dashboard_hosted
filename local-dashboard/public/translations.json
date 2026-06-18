@@ -109,8 +109,16 @@
       "en": "Zoom out",
       "kn": ""
     },
+    "map_controls_aria": {
+      "en": "Map controls",
+      "kn": ""
+    },
     "reset": {
       "en": "Reset",
+      "kn": ""
+    },
+    "reset_map_aria": {
+      "en": "Reset map",
       "kn": ""
     },
     "no_mapped_markets": {
