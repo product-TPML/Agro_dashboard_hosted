@@ -871,6 +871,8 @@
   }
 
   function render() {
+    document.documentElement.setAttribute("lang", state.locale === "kn" ? "kn" : "en");
+    document.documentElement.setAttribute("data-locale", state.locale);
     const searchInputState = captureSearchInputState();
     const filterInputState = captureFilterInputState();
     const scrollState = captureScrollState();
@@ -1882,12 +1884,12 @@
       <section class="history-card">
         <div class="chart-shell">
           <div class="history-layout">
+            <div class="history-chart-panel">
+              <p class="chart-scroll-note">${escapeHtml(getUiText("chart_scroll_note", "<-- Scroll horizontally to see all dates -->"))}</p>
+              ${renderChart(historyRows, activePoint, row.rowKey)}
+            </div>
             <div class="chart-summary-shell">
               ${renderChartSummary(activePoint)}
-            </div>
-            <p class="chart-scroll-note">${escapeHtml(getUiText("chart_scroll_note", "<-- Scroll horizontally to see all dates -->"))}</p>
-            <div class="history-chart-panel">
-              ${renderChart(historyRows, activePoint, row.rowKey)}
             </div>
             <div class="axis-note">${escapeHtml(getUiText("trend_note", "Trend is shown for this exact commodity, market, variety, and grade combination."))}</div>
           </div>

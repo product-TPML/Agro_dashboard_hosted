@@ -1,4 +1,6 @@
 :root {
+  --font-body: "Inter", system-ui, sans-serif;
+  --font-display: "Libre Caslon Text", Georgia, serif;
   --bg: #f6f4ff;
   --bg-strong: #e7e6f7;
   --panel: #fffdfb;
@@ -20,6 +22,19 @@
   --price-modal: #cc9900;
 }
 
+@font-face {
+  font-family: "Prajavani Text";
+  src: url("./fonts/PrajavaniTextRegular.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+html[data-locale="kn"] {
+  --font-body: "Prajavani Text", system-ui, sans-serif;
+  --font-display: "Prajavani Text", system-ui, sans-serif;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -27,7 +42,7 @@
 body {
   margin: 0;
   color: var(--ink);
-  font-family: "Inter", system-ui, sans-serif;
+  font-family: var(--font-body);
   background:
     radial-gradient(circle at top left, rgba(63, 102, 83, 0.08), transparent 26%),
     radial-gradient(circle at 82% 16%, rgba(205, 157, 109, 0.14), transparent 20%),
@@ -213,7 +228,7 @@ select {
 
 .welcome-copy h2 {
   margin: 0;
-  font-family: "Libre Caslon Text", Georgia, serif;
+  font-family: var(--font-display);
   font-size: clamp(30px, 4vw, 44px);
   line-height: 1.05;
   letter-spacing: -0.03em;
@@ -245,9 +260,13 @@ select {
   min-width: 0;
 }
 
+.category-panel-head > div {
+  width: 100%;
+}
+
 .category-panel h3 {
   margin: 0 0 6px;
-  font-family: "Libre Caslon Text", Georgia, serif;
+  font-family: var(--font-display);
   font-size: clamp(24px, 2.8vw, 30px);
   letter-spacing: -0.02em;
 }
@@ -258,6 +277,7 @@ select {
 
 .category-swipe-hint {
   text-align: center;
+  width: 100%;
 }
 
 .category-swipe-hint-mobile {
@@ -431,7 +451,7 @@ select {
 .table-head h2,
 .history-card h3 {
   margin: 0;
-  font-family: "Libre Caslon Text", Georgia, serif;
+  font-family: var(--font-display);
   font-size: 26px;
   letter-spacing: -0.02em;
 }
@@ -1203,7 +1223,7 @@ select {
 
 .result-card-identity h3 {
   margin: 0;
-  font-family: "Libre Caslon Text", Georgia, serif;
+  font-family: var(--font-display);
   font-size: clamp(24px, 2.8vw, 38px);
   line-height: 1.05;
   letter-spacing: -0.03em;
@@ -1614,22 +1634,6 @@ select {
   gap: 12px;
 }
 
-.history-layout[data-chart-summary-layout="compact"] .chart-scroll-note {
-  order: 2;
-}
-
-.history-layout[data-chart-summary-layout="compact"] .history-chart-panel {
-  order: 3;
-}
-
-.history-layout[data-chart-summary-layout="compact"] .chart-summary-shell {
-  order: 1;
-}
-
-.history-layout[data-chart-summary-layout="compact"] .axis-note {
-  order: 4;
-}
-
 .history-layout[data-chart-summary-layout="compact"] .chart-summary {
   grid-template-columns: 1fr;
   align-items: stretch;
@@ -1670,24 +1674,6 @@ select {
   grid-template-columns: minmax(0, 1fr) 360px;
   align-items: start;
   gap: 18px 22px;
-}
-
-.history-layout[data-chart-summary-layout="wide"] .chart-summary-shell {
-  order: 2;
-}
-
-.history-layout[data-chart-summary-layout="wide"] .chart-scroll-note {
-  order: 1;
-  grid-column: 1;
-  margin-bottom: 0;
-}
-
-.history-layout[data-chart-summary-layout="wide"] .history-chart-panel {
-  order: 3;
-}
-
-.history-layout[data-chart-summary-layout="wide"] .axis-note {
-  order: 4;
 }
 
 .history-layout[data-chart-summary-layout="wide"] .chart-summary-shell {
@@ -2148,7 +2134,6 @@ select {
   .history-layout[data-chart-summary-layout="mobile"] {
     grid-template-areas:
       "summary"
-      "scroll"
       "chart"
       "note";
     gap: 8px;
@@ -2156,11 +2141,6 @@ select {
 
   .history-layout[data-chart-summary-layout="mobile"] .chart-summary-shell {
     grid-area: summary;
-  }
-
-  .history-layout[data-chart-summary-layout="mobile"] .chart-scroll-note {
-    grid-area: scroll;
-    margin: 0;
   }
 
   .history-layout[data-chart-summary-layout="mobile"] .history-chart-panel {
