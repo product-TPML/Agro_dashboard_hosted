@@ -19,6 +19,7 @@ The build script recreates the database from the workbook each time.
 
 - `commodities`
 - `commodity_mapping`
+  Includes perishability and commodity category metadata.
 - `districts`
 - `markets`
 - `market_district_mapping`
@@ -42,5 +43,6 @@ The build script recreates the database from the workbook each time.
 - This is a static snapshot database for local dashboard development.
 - No insert/update/delete flow is required for the current phase.
 - Rebuild from the workbook if the source Excel file changes.
+- Commodity category metadata is imported from `scripts/commodity_category_mapping.json`.
 - Market-to-district geography is seeded from `scripts/karnataka_market_district_mapping.json`.
 - The district mapping is intended for dashboard map interactions and local navigation.

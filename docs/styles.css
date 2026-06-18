@@ -221,6 +221,185 @@ select {
   line-height: 1.55;
 }
 
+.category-panel {
+  display: grid;
+  gap: 12px;
+  padding: 22px;
+  min-width: 0;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(247, 245, 255, 0.98)),
+    var(--panel);
+}
+
+.category-panel-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+}
+
+.category-panel h3 {
+  margin: 0 0 6px;
+  font-family: "Libre Caslon Text", Georgia, serif;
+  font-size: clamp(24px, 2.8vw, 30px);
+  letter-spacing: -0.02em;
+}
+
+.category-panel-head p:last-child {
+  margin: 0;
+}
+
+.category-rail,
+.commodity-rail {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 4px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+  min-width: 0;
+}
+
+.category-rail {
+  align-items: center;
+  gap: 10px;
+  padding: 2px 0;
+}
+
+.category-rail::-webkit-scrollbar,
+.commodity-rail::-webkit-scrollbar {
+  display: none;
+}
+
+.category-pill,
+.commodity-pill {
+  border: 1px solid var(--line);
+  cursor: pointer;
+  flex: 0 0 auto;
+}
+
+.category-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 148px;
+  padding: 12px 14px;
+  border-radius: 20px;
+  background: linear-gradient(180deg, #fffdfb 0%, #f4f2ff 100%);
+  box-shadow: 0 12px 26px rgba(22, 26, 50, 0.06);
+  text-align: left;
+  position: relative;
+  transition: background 140ms ease, border-color 140ms ease, box-shadow 160ms ease, transform 140ms ease;
+}
+
+.category-pill:hover,
+.category-pill:focus-visible {
+  background: linear-gradient(180deg, #fffdfa 0%, #efedf9 100%);
+  outline: none;
+}
+
+.category-pill.is-active {
+  border-color: rgba(1, 45, 29, 0.24);
+  background: linear-gradient(180deg, #e7f2eb 0%, #dfeee5 100%);
+  box-shadow: 0 16px 30px rgba(1, 45, 29, 0.12);
+  z-index: 2;
+}
+
+.category-pill-icon,
+.commodity-pill-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+.category-pill-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+  background: rgba(255, 253, 251, 0.88);
+  font-size: 24px;
+  box-shadow: inset 0 0 0 1px rgba(1, 45, 29, 0.06);
+}
+
+.category-pill-copy {
+  display: grid;
+  gap: 0;
+  min-width: 0;
+}
+
+.category-pill-copy strong {
+  color: var(--accent-strong);
+  font-size: 16px;
+  line-height: 1.15;
+}
+
+.commodity-rail-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  display: grid;
+  gap: 10px;
+  padding: 4px 0 2px;
+  overflow: hidden;
+  background: transparent;
+}
+
+.commodity-rail-meta {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  min-width: 0;
+}
+
+.commodity-rail-count {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.commodity-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 54px;
+  padding: 10px 14px;
+  border-radius: 18px;
+  background: var(--panel-soft);
+  color: var(--accent-strong);
+}
+
+.commodity-pill:hover,
+.commodity-pill:focus-visible {
+  background: var(--panel-alt);
+  outline: none;
+  transform: translateY(-1px);
+}
+
+.commodity-pill-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  background: #fffefc;
+  font-size: 18px;
+  box-shadow: inset 0 0 0 1px rgba(1, 45, 29, 0.06);
+}
+
+.commodity-pill-label {
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
 .map-card {
   display: grid;
   align-content: space-between;
@@ -1569,6 +1748,7 @@ select {
   }
 
   .welcome-card,
+  .category-panel,
   .map-card,
   .table-card,
   .history-card,
@@ -1588,10 +1768,63 @@ select {
   }
 
   .search-panel,
+  .category-panel,
   .table-card,
   .welcome-card,
   .map-card {
     width: 100%;
+  }
+
+  .category-panel {
+    gap: 14px;
+    padding: 16px;
+  }
+
+  .category-panel h3 {
+    font-size: 22px;
+  }
+
+  .category-pill {
+    min-width: 132px;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 16px;
+  }
+
+  .category-pill-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    font-size: 19px;
+  }
+
+  .category-pill-copy strong {
+    font-size: 14px;
+  }
+
+  .commodity-rail-wrap {
+    gap: 8px;
+    padding: 2px 0;
+  }
+
+  .commodity-rail-head strong {
+    font-size: 16px;
+  }
+
+  .commodity-pill {
+    min-height: 50px;
+    padding: 9px 12px;
+    border-radius: 16px;
+  }
+
+  .commodity-pill-icon {
+    width: 30px;
+    height: 30px;
+    font-size: 16px;
+  }
+
+  .commodity-pill-label {
+    font-size: 13px;
   }
 
   .table-card {

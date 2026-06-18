@@ -6,11 +6,19 @@ const Database = require("better-sqlite3");
 const ROOT_DIR = path.resolve(__dirname, "..");
 const SOURCE_WORKBOOK = path.join(ROOT_DIR, "Agro Dashboard - new data.xlsx");
 const MARKET_DISTRICT_MAPPING_FILE = path.join(__dirname, "karnataka_market_district_mapping.json");
+const COMMODITY_CATEGORY_MAPPING_FILE = path.join(__dirname, "commodity_category_mapping.json");
 const DATA_DIR = path.join(ROOT_DIR, "data");
 const DB_PATH = path.join(DATA_DIR, "agro_dashboard.db");
 
 const REQUIRED_SHEETS = ["prices", "commodity_mapping", "runs"];
 const PERISHABILITY_VALUES = new Set(["perishable", "non-perishable"]);
+const CATEGORY_VALUES = new Set([
+  "fruits",
+  "vegetables",
+  "nuts_and_seeds",
+  "grains_and_pulses",
+  "miscellaneous",
+]);
 
 function main() {
   ensureWorkbookExists();
@@ -22,6 +30,7 @@ function main() {
   const workbook = XLSX.readFile(SOURCE_WORKBOOK);
   validateSheets(workbook);
   const geography = readMarketDistrictMapping();
+  const categoryMetadata = readCommodityCategoryMapping();
 
   const prices = readRows(workbook.Sheets.prices);
   const mappings = readRows(workbook.Sheets.commodity_mapping);
@@ -32,7 +41,7 @@ function main() {
     db.pragma("journal_mode = WAL");
     db.pragma("foreign_keys = ON");
     createSchema(db);
-    importStaticData(db, prices, mappings, runs, geography);
+    importStaticData(db, prices, mappings, runs, geography, categoryMetadata);
     printSummary(db);
   } finally {
     db.close();
@@ -62,6 +71,28 @@ function readMarketDistrictMapping() {
   if (!Array.isArray(payload.districts) || !Array.isArray(payload.marketMappings)) {
     throw new Error("Market mapping file must contain districts and marketMappings arrays.");
   }
+
+  return payload;
+}
+
+function readCommodityCategoryMapping() {
+  if (!fs.existsSync(COMMODITY_CATEGORY_MAPPING_FILE)) {
+    throw new Error(`Commodity category mapping file not found: ${COMMODITY_CATEGORY_MAPPING_FILE}`);
+  }
+
+  const payload = JSON.parse(fs.readFileSync(COMMODITY_CATEGORY_MAPPING_FILE, "utf8"));
+  if (!Array.isArray(payload.categories) || !Array.isArray(payload.mappings)) {
+    throw new Error("Commodity category mapping file must contain categories and mappings arrays.");
+  }
+
+  payload.categories.forEach((category) => {
+    if (!category || typeof category.id !== "string") {
+      throw new Error("Each commodity category must include a string id.");
+    }
+    if (!CATEGORY_VALUES.has(category.id)) {
+      throw new Error(`Unknown commodity category id: ${category.id}`);
+    }
+  });
 
   return payload;
 }
@@ -101,6 +132,17 @@ function normalizePerishability(value) {
   return text;
 }
 
+function normalizeCategory(value) {
+  const text = String(value).trim().toLowerCase();
+  if (!text) {
+    return "";
+  }
+  if (!CATEGORY_VALUES.has(text)) {
+    throw new Error(`Unexpected category value: ${value}`);
+  }
+  return text;
+}
+
 function createSchema(db) {
   db.exec(`
     CREATE TABLE source_snapshot (
@@ -115,12 +157,14 @@ function createSchema(db) {
     CREATE TABLE commodities (
       id INTEGER PRIMARY KEY,
       name TEXT NOT NULL UNIQUE,
-      perishability TEXT CHECK (perishability IN ('perishable', 'non-perishable'))
+      perishability TEXT CHECK (perishability IN ('perishable', 'non-perishable')),
+      category TEXT CHECK (category IN ('fruits', 'vegetables', 'nuts_and_seeds', 'grains_and_pulses', 'miscellaneous'))
     );
 
     CREATE TABLE commodity_mapping (
       commodity_id INTEGER PRIMARY KEY REFERENCES commodities(id),
       perishability TEXT NOT NULL CHECK (perishability IN ('perishable', 'non-perishable')),
+      category TEXT NOT NULL CHECK (category IN ('fruits', 'vegetables', 'nuts_and_seeds', 'grains_and_pulses', 'miscellaneous')),
       updated_at TEXT
     );
 
@@ -208,6 +252,7 @@ function createSchema(db) {
       po.heading,
       c.name AS commodity,
       COALESCE(cm.perishability, c.perishability) AS perishability,
+      COALESCE(cm.category, c.category) AS category,
       m.name AS market,
       d.name AS district,
       d.slug AS district_slug,
@@ -252,12 +297,13 @@ function createSchema(db) {
   `);
 }
 
-function importStaticData(db, prices, mappings, runs, geography) {
+function importStaticData(db, prices, mappings, runs, geography, categoryMetadata) {
   const insertCommodity = db.prepare(`
-    INSERT INTO commodities (name, perishability)
-    VALUES (?, ?)
+    INSERT INTO commodities (name, perishability, category)
+    VALUES (?, ?, ?)
     ON CONFLICT(name) DO UPDATE SET
-      perishability = COALESCE(excluded.perishability, commodities.perishability)
+      perishability = COALESCE(excluded.perishability, commodities.perishability),
+      category = COALESCE(excluded.category, commodities.category)
   `);
   const insertMarket = db.prepare("INSERT OR IGNORE INTO markets (name) VALUES (?)");
   const insertDistrict = db.prepare(`
@@ -272,8 +318,8 @@ function importStaticData(db, prices, mappings, runs, geography) {
     VALUES (?, ?, ?)
   `);
   const insertMapping = db.prepare(`
-    INSERT INTO commodity_mapping (commodity_id, perishability, updated_at)
-    VALUES (?, ?, ?)
+    INSERT INTO commodity_mapping (commodity_id, perishability, category, updated_at)
+    VALUES (?, ?, ?, ?)
   `);
   const insertPrice = db.prepare(`
     INSERT INTO price_observations (
@@ -318,10 +364,15 @@ function importStaticData(db, prices, mappings, runs, geography) {
       runs_row_count
     ) VALUES (1, ?, ?, ?, ?, ?)
   `);
+  const categoryLookup = buildCommodityCategoryLookup(categoryMetadata);
 
   const loadAll = db.transaction(() => {
     for (const row of prices) {
-      insertCommodity.run(row.commodity, normalizePerishability(row.perishability) || null);
+      insertCommodity.run(
+        row.commodity,
+        normalizePerishability(row.perishability) || null,
+        getCommodityCategory(row.commodity, categoryLookup)
+      );
       insertMarket.run(row.Market);
       insertVariety.run(row.Variety);
       insertGrade.run(row.Grade);
@@ -329,7 +380,11 @@ function importStaticData(db, prices, mappings, runs, geography) {
     }
 
     for (const row of mappings) {
-      insertCommodity.run(row.commodity, normalizePerishability(row.perishability) || null);
+      insertCommodity.run(
+        row.commodity,
+        normalizePerishability(row.perishability) || null,
+        getCommodityCategory(row.commodity, categoryLookup)
+      );
     }
 
     for (const district of geography.districts) {
@@ -344,6 +399,7 @@ function importStaticData(db, prices, mappings, runs, geography) {
     const unitIds = getLookupMap(db, "units");
 
     validateMarketDistrictCoverage(marketIds, geography.marketMappings, districtIds);
+    validateCommodityCategoryCoverage(commodityIds, categoryLookup);
 
     for (const row of geography.marketMappings) {
       insertMarketDistrictMapping.run(
@@ -357,6 +413,7 @@ function importStaticData(db, prices, mappings, runs, geography) {
       insertMapping.run(
         commodityIds.get(row.commodity),
         normalizePerishability(row.perishability),
+        getCommodityCategory(row.commodity, categoryLookup),
         row.updated_at || null
       );
     }
@@ -408,6 +465,36 @@ function importStaticData(db, prices, mappings, runs, geography) {
   loadAll();
 }
 
+function buildCommodityCategoryLookup(categoryMetadata) {
+  const lookup = new Map();
+
+  for (const row of categoryMetadata.mappings) {
+    if (!row || typeof row.commodity !== "string") {
+      throw new Error("Each commodity category mapping must include a commodity name.");
+    }
+
+    const commodity = row.commodity.trim();
+    const category = normalizeCategory(row.category);
+    if (!commodity) {
+      throw new Error("Commodity category mapping contains an empty commodity name.");
+    }
+    if (lookup.has(commodity)) {
+      throw new Error(`Duplicate commodity category mapping: ${commodity}`);
+    }
+    lookup.set(commodity, category);
+  }
+
+  return lookup;
+}
+
+function getCommodityCategory(commodity, categoryLookup) {
+  const category = categoryLookup.get(commodity);
+  if (!category) {
+    throw new Error(`Missing commodity category mapping for: ${commodity}`);
+  }
+  return category;
+}
+
 function validateMarketDistrictCoverage(marketIds, marketMappings, districtIds) {
   const mappedMarkets = new Set();
 
@@ -424,6 +511,19 @@ function validateMarketDistrictCoverage(marketIds, marketMappings, districtIds) 
   const missingMarkets = [...marketIds.keys()].filter((market) => !mappedMarkets.has(market));
   if (missingMarkets.length) {
     throw new Error(`Missing district mappings for markets: ${missingMarkets.join(", ")}`);
+  }
+}
+
+function validateCommodityCategoryCoverage(commodityIds, categoryLookup) {
+  for (const commodity of categoryLookup.keys()) {
+    if (!commodityIds.has(commodity)) {
+      throw new Error(`Commodity category mapping refers to unknown commodity: ${commodity}`);
+    }
+  }
+
+  const missingCommodities = [...commodityIds.keys()].filter((commodity) => !categoryLookup.has(commodity));
+  if (missingCommodities.length) {
+    throw new Error(`Missing commodity category mappings for commodities: ${missingCommodities.join(", ")}`);
   }
 }
 

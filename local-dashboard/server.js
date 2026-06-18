@@ -17,6 +17,14 @@ const db = new Database(DB_PATH, { readonly: true, fileMustExist: true });
 
 const commodityStmt = db.prepare("SELECT name FROM commodities ORDER BY name ASC");
 const marketStmt = db.prepare("SELECT name FROM markets ORDER BY name ASC");
+const commodityCategoryStmt = db.prepare(`
+  SELECT
+    c.name AS commodity,
+    COALESCE(cm.category, c.category) AS category
+  FROM commodities c
+  LEFT JOIN commodity_mapping cm ON cm.commodity_id = c.id
+  ORDER BY c.name ASC
+`);
 const varietyStmt = db.prepare(`
   SELECT DISTINCT commodity, variety
   FROM price_observations_flat
@@ -40,6 +48,7 @@ const contextStatements = {
       report_date,
       commodity,
       perishability,
+      category,
       market,
       variety,
       grade,
@@ -58,6 +67,7 @@ const contextStatements = {
       report_date,
       commodity,
       perishability,
+      category,
       market,
       variety,
       grade,
@@ -76,6 +86,7 @@ const contextStatements = {
       report_date,
       commodity,
       perishability,
+      category,
       market,
       variety,
       grade,
@@ -98,6 +109,7 @@ const searchIndex = {
     variety: row.variety,
   })),
 };
+const categoryIndex = buildCategoryIndex();
 
 const MIME_TYPES = {
   ".html": "text/html; charset=utf-8",
@@ -116,6 +128,10 @@ const server = http.createServer((req, res) => {
 
   if (requestUrl.pathname === "/api/search-index") {
     return handleSearchIndex(res);
+  }
+
+  if (requestUrl.pathname === "/api/categories") {
+    return handleCategories(res);
   }
 
   if (requestUrl.pathname === "/api/context") {
@@ -248,6 +264,7 @@ function handleContext(requestUrl, res) {
       reportDate: row.report_date,
       commodity: row.commodity,
       perishability: row.perishability,
+      category: row.category,
       market: row.market,
       variety: row.variety,
       grade: row.grade,
@@ -266,6 +283,10 @@ function handleSearchIndex(res) {
     markets: searchIndex.markets,
     varieties: searchIndex.varieties,
   });
+}
+
+function handleCategories(res) {
+  return sendJson(res, 200, categoryIndex);
 }
 
 function handleMap(res) {
@@ -291,6 +312,36 @@ function handleMap(res) {
   return sendJson(res, 200, {
     districts: [...grouped.values()],
   });
+}
+
+function buildCategoryIndex() {
+  const definitions = [
+    { id: "fruits", label: "Fruits" },
+    { id: "vegetables", label: "Vegetables" },
+    { id: "nuts_and_seeds", label: "Nuts and Seeds" },
+    { id: "grains_and_pulses", label: "Grains and Pulses" },
+    { id: "miscellaneous", label: "Miscellaneous" },
+  ];
+  const grouped = new Map();
+
+  commodityCategoryStmt.all().forEach((row) => {
+    if (!row.category) {
+      return;
+    }
+    if (!grouped.has(row.category)) {
+      grouped.set(row.category, []);
+    }
+    grouped.get(row.category).push(row.commodity);
+  });
+
+  return {
+    categories: definitions.map((definition) => ({
+      id: definition.id,
+      label: definition.label,
+      commodityCount: (grouped.get(definition.id) || []).length,
+      commodities: (grouped.get(definition.id) || []).slice().sort((left, right) => left.localeCompare(right)),
+    })),
+  };
 }
 
 function getMatchSortKey(source, query) {

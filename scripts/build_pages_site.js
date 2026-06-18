@@ -19,6 +19,7 @@ function main() {
         report_date,
         commodity,
         perishability,
+        category,
         market,
         variety,
         grade,
@@ -34,6 +35,7 @@ function main() {
       reportDate: row.report_date,
       commodity: row.commodity,
       perishability: row.perishability,
+      category: row.category,
       market: row.market,
       variety: row.variety,
       grade: row.grade,
@@ -57,6 +59,7 @@ function main() {
       })),
     };
 
+    const categoryData = buildCategoryData(db);
     const mapData = {
       districts: buildMapDistricts(db),
     };
@@ -72,6 +75,7 @@ function main() {
     fs.mkdirSync(PUBLIC_DATA_DIR, { recursive: true });
     writeJson(path.join(PUBLIC_DATA_DIR, "observations.json"), observations);
     writeJson(path.join(PUBLIC_DATA_DIR, "search-index.json"), searchIndex);
+    writeJson(path.join(PUBLIC_DATA_DIR, "categories.json"), categoryData);
     writeJson(path.join(PUBLIC_DATA_DIR, "map-data.json"), mapData);
     writeJson(path.join(PUBLIC_DATA_DIR, "metadata.json"), metadata);
 
@@ -87,6 +91,44 @@ function ensureDatabaseExists() {
   if (!fs.existsSync(DB_PATH)) {
     throw new Error(`Database not found: ${DB_PATH}`);
   }
+}
+
+function buildCategoryData(db) {
+  const definitions = [
+    { id: "fruits", label: "Fruits" },
+    { id: "vegetables", label: "Vegetables" },
+    { id: "nuts_and_seeds", label: "Nuts and Seeds" },
+    { id: "grains_and_pulses", label: "Grains and Pulses" },
+    { id: "miscellaneous", label: "Miscellaneous" },
+  ];
+  const rows = db.prepare(`
+    SELECT
+      c.name AS commodity,
+      COALESCE(cm.category, c.category) AS category
+    FROM commodities c
+    LEFT JOIN commodity_mapping cm ON cm.commodity_id = c.id
+    ORDER BY c.name ASC
+  `).all();
+  const grouped = new Map();
+
+  rows.forEach((row) => {
+    if (!row.category) {
+      return;
+    }
+    if (!grouped.has(row.category)) {
+      grouped.set(row.category, []);
+    }
+    grouped.get(row.category).push(row.commodity);
+  });
+
+  return {
+    categories: definitions.map((definition) => ({
+      id: definition.id,
+      label: definition.label,
+      commodityCount: (grouped.get(definition.id) || []).length,
+      commodities: (grouped.get(definition.id) || []).slice().sort((left, right) => left.localeCompare(right)),
+    })),
+  };
 }
 
 function buildMapDistricts(db) {

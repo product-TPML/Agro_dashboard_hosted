@@ -9,6 +9,82 @@
     min: "#C2410C",
     modal: "#CC9900",
   };
+  const CATEGORY_LABELS = {
+    fruits: { en: "Fruits", kn: "ಹಣ್ಣುಗಳು" },
+    vegetables: { en: "Vegetables", kn: "ತರಕಾರಿಗಳು" },
+    nuts_and_seeds: { en: "Nuts and Seeds", kn: "ಕಾಯಿ ಮತ್ತು ಬೀಜಗಳು" },
+    grains_and_pulses: { en: "Grains and Pulses", kn: "ಧಾನ್ಯ ಮತ್ತು ಬೇಳೆಗಳು" },
+    miscellaneous: { en: "Miscellaneous", kn: "ಇತರೆ" },
+  };
+  const CATEGORY_ICONS = {
+    fruits: "🍎",
+    vegetables: "🥕",
+    nuts_and_seeds: "🌰",
+    grains_and_pulses: "🌾",
+    miscellaneous: "🧺",
+  };
+  const COMMODITY_ICONS = {
+    Apple: "🍎",
+    Banana: "🍌",
+    "Banana Green": "🍌",
+    Grapes: "🍇",
+    Guava: "🍐",
+    "Jack Fruit": "🍈",
+    Karbuja: "🍈",
+    "Lime (Lemon)": "🍋",
+    Mango: "🥭",
+    "Mango (Raw-Ripe)": "🥭",
+    Mousambi: "🍊",
+    Orange: "🍊",
+    Papaya: "🍈",
+    "Pine Apple": "🍍",
+    Pomagranate: "🍎",
+    "Tamarind Fruit": "🫛",
+    "Water Melon": "🍉",
+    Onion: "🧅",
+    Potato: "🥔",
+    Tomato: "🍅",
+    Carrot: "🥕",
+    Beetroot: "🫜",
+    Cabbage: "🥬",
+    Cauliflower: "🥦",
+    Capsicum: "🫑",
+    "Green Chilly": "🌶️",
+    "Chilly Red": "🌶️",
+    Garlic: "🧄",
+    Ginger: "🫚",
+    "Sweet Potato": "🍠",
+    "Tender Coconut": "🥥",
+    "Coconut (Per 1000)": "🥥",
+    Copra: "🥥",
+    Groundnut: "🥜",
+    Cashewnut: "🌰",
+    Arecanut: "🌰",
+    Pepper: "🫛",
+    Paddy: "🌾",
+    Rice: "🍚",
+    Wheat: "🌾",
+    Maize: "🌽",
+    Jowar: "🌾",
+    Ragi: "🌾",
+    Bajra: "🌾",
+    Barley: "🌾",
+    "Foxtail Millet": "🌾",
+    Navane: "🌾",
+    "Same/Savi": "🌾",
+    Soyabeen: "🫘",
+    Greengram: "🫘",
+    "Green Gramdal": "🫘",
+    Bengalgram: "🫘",
+    "Bengal Gramdal": "🫘",
+    Blackgram: "🫘",
+    "Black Gramdal": "🫘",
+    Cowpea: "🫘",
+    "Horse Gram": "🫘",
+    Redgram: "🫘",
+    Tur: "🫘",
+    "Tur Dal": "🫘",
+  };
 
   const state = {
     route: parseRoute(),
@@ -40,6 +116,9 @@
       markets: [],
       varieties: [],
     },
+    categoryGroups: [],
+    activeHomeCategoryId: "",
+    shouldRevealActiveHomeCategory: false,
     mapSvgMarkup: "",
     mapDistricts: [],
     mapBaseViewBox: null,
@@ -98,6 +177,7 @@
     await Promise.all([
       loadTranslations(),
       loadSearchIndex(),
+      loadCategoryGroups(),
       loadMapSvg(),
       loadMapData(),
       loadObservations(),
@@ -172,6 +252,25 @@
 
     if (state.query.trim() && hasClientSearchIndex()) {
       state.suggestions = buildLocalizedSearchResults(state.query.trim());
+    }
+  }
+
+  async function loadCategoryGroups() {
+    try {
+      const payload = await fetchJson("./data/categories.json");
+      state.categoryGroups = Array.isArray(payload.categories) ? payload.categories : [];
+    } catch (error) {
+      state.categoryGroups = [];
+    }
+
+    if (!state.categoryGroups.length) {
+      state.activeHomeCategoryId = "";
+      return;
+    }
+
+    const hasActiveCategory = state.categoryGroups.some((category) => category.id === state.activeHomeCategoryId);
+    if (!hasActiveCategory) {
+      state.activeHomeCategoryId = state.categoryGroups[0].id;
     }
   }
 
@@ -778,6 +877,8 @@
 
               ${renderSearchPanel()}
 
+              ${renderCategorySection()}
+
               <aside class="panel map-card">
                 <div>
                   <p class="search-label">Market Map</p>
@@ -893,9 +994,17 @@
     const filterModalBody = document.querySelector("[data-preserve-scroll-id='filter-modal-body']");
     const filterResults = [...document.querySelectorAll("[data-preserve-scroll-id='filter-search-results']")];
     const chartScroll = document.querySelector("[data-preserve-scroll-id='chart-scroll']");
+    const homeCategoryRail = document.querySelector("[data-home-category-rail]");
+    const homeCommodityRail = document.querySelector("[data-home-commodity-rail]");
     return {
       windowX: window.scrollX,
       windowY: window.scrollY,
+      homeCategoryRail: homeCategoryRail ? {
+        scrollLeft: homeCategoryRail.scrollLeft,
+      } : null,
+      homeCommodityRail: homeCommodityRail ? {
+        scrollLeft: homeCommodityRail.scrollLeft,
+      } : null,
       tableWrap: (tableScroller || tableWrap) ? {
         scrollLeft: (tableScroller || tableWrap).scrollLeft,
         scrollTop: (tableScroller || tableWrap).scrollTop,
@@ -921,6 +1030,20 @@
     }
 
     window.scrollTo(snapshot.windowX, snapshot.windowY);
+
+    if (snapshot.homeCategoryRail) {
+      const homeCategoryRail = document.querySelector("[data-home-category-rail]");
+      if (homeCategoryRail) {
+        homeCategoryRail.scrollLeft = snapshot.homeCategoryRail.scrollLeft;
+      }
+    }
+
+    if (snapshot.homeCommodityRail) {
+      const homeCommodityRail = document.querySelector("[data-home-commodity-rail]");
+      if (homeCommodityRail) {
+        homeCommodityRail.scrollLeft = snapshot.homeCommodityRail.scrollLeft;
+      }
+    }
 
     if (!snapshot.tableWrap) {
       if (snapshot.filterModalBody || (snapshot.filterResults && snapshot.filterResults.length)) {
@@ -1006,6 +1129,67 @@
         </div>
         <p class="search-hint">Examples: Tomato, Mysuru, or Local.</p>
         <div data-search-suggestions>${state.suggestions.length ? renderSuggestions() : ""}</div>
+      </section>
+    `;
+  }
+
+  function renderCategorySection() {
+    if (!state.categoryGroups.length) {
+      return "";
+    }
+
+    const activeCategory = getActiveHomeCategory();
+    if (!activeCategory) {
+      return "";
+    }
+
+    return `
+      <section class="panel category-panel" aria-label="Commodity categories">
+        <div class="category-panel-head">
+          <div>
+            <p class="search-label">Browse by category</p>
+            <h3>Pick a category, then jump to a commodity</h3>
+            <p class="muted">Swipe horizontally to browse categories and commodities before opening the results view.</p>
+          </div>
+        </div>
+
+        <div class="category-rail" role="tablist" aria-label="Commodity categories" data-home-category-rail="true">
+          ${state.categoryGroups.map((category) => {
+            const isActive = category.id === state.activeHomeCategoryId;
+            return `
+              <button
+                type="button"
+                class="category-pill ${isActive ? "is-active" : ""}"
+                data-home-category="${escapeAttribute(category.id)}"
+                role="tab"
+                aria-selected="${isActive ? "true" : "false"}"
+              >
+                <span class="category-pill-icon" aria-hidden="true">${escapeHtml(getCategoryIcon(category.id))}</span>
+                <span class="category-pill-copy">
+                  <strong>${escapeHtml(getCategoryLabel(category.id, category.label))}</strong>
+                </span>
+              </button>
+            `;
+          }).join("")}
+        </div>
+
+        <div class="commodity-rail-wrap">
+          <div class="commodity-rail-meta">
+            <span class="commodity-rail-count">${formatCountLabel(activeCategory.commodityCount, "commodity", "commodities")}</span>
+          </div>
+          <div class="commodity-rail" aria-label="${escapeAttribute(getCategoryLabel(activeCategory.id, activeCategory.label))} commodities" data-home-commodity-rail="true">
+            ${activeCategory.commodities.map((commodity) => `
+              <button
+                type="button"
+                class="commodity-pill"
+                data-home-commodity="${escapeAttribute(commodity)}"
+              >
+                <span class="commodity-pill-icon" aria-hidden="true">${escapeHtml(getCommodityIcon(commodity, activeCategory.id))}</span>
+                <span class="commodity-pill-label">${escapeHtml(translateEntity("commodity", commodity))}</span>
+              </button>
+            `).join("")}
+          </div>
+        </div>
       </section>
     `;
   }
@@ -1139,6 +1323,56 @@
       return "Opens market results";
     }
     return "Opens variety results";
+  }
+
+  function getActiveHomeCategory() {
+    if (!state.categoryGroups.length) {
+      return null;
+    }
+    return state.categoryGroups.find((category) => category.id === state.activeHomeCategoryId) || state.categoryGroups[0];
+  }
+
+  function getCategoryLabel(categoryId, fallbackLabel) {
+    const entry = CATEGORY_LABELS[categoryId];
+    if (!entry) {
+      return fallbackLabel || categoryId;
+    }
+    if (state.locale === "kn" && entry.kn) {
+      return entry.kn;
+    }
+    return entry.en || fallbackLabel || categoryId;
+  }
+
+  function getCategoryIcon(categoryId) {
+    return CATEGORY_ICONS[categoryId] || "🧺";
+  }
+
+  function getCommodityIcon(commodity, categoryId) {
+    return COMMODITY_ICONS[commodity] || getCategoryIcon(categoryId);
+  }
+
+  function formatCountLabel(count, singular, plural) {
+    return `${count} ${count === 1 ? singular : plural}`;
+  }
+
+  function handleHomeCategorySelect(categoryId) {
+    if (!categoryId || categoryId === state.activeHomeCategoryId) {
+      return;
+    }
+    state.activeHomeCategoryId = categoryId;
+    state.shouldRevealActiveHomeCategory = true;
+    scheduleRender();
+  }
+
+  function handleHomeCommoditySelect(commodity) {
+    navigate({
+      view: "table",
+      layout: "cards",
+      type: "commodity",
+      commodity,
+      market: "",
+      variety: "",
+    });
   }
 
   function renderFilterLauncher() {
@@ -1858,6 +2092,18 @@
       });
     });
 
+    document.querySelectorAll("[data-home-category]").forEach((button) => {
+      button.addEventListener("click", () => {
+        handleHomeCategorySelect(button.dataset.homeCategory);
+      });
+    });
+
+    document.querySelectorAll("[data-home-commodity]").forEach((button) => {
+      button.addEventListener("click", () => {
+        handleHomeCommoditySelect(button.dataset.homeCommodity);
+      });
+    });
+
     document.querySelectorAll("[data-results-layout]").forEach((button) => {
       button.addEventListener("click", () => {
         setResultsLayout(button.dataset.resultsLayout);
@@ -2086,6 +2332,7 @@
   function runPostRenderEffects() {
     updateTableWrapHeight();
     syncFilterHintAnimation();
+    syncActiveHomeCategoryViewport();
     if (getActiveResultsLayout() === "table") {
       syncStickyTableHeader();
       primeExpandedHistoryScroll();
@@ -2100,6 +2347,22 @@
         updateTableWrapHeight();
       }
     }
+  }
+
+  function syncActiveHomeCategoryViewport() {
+    if (state.route.view !== "home" || !state.shouldRevealActiveHomeCategory) {
+      return;
+    }
+
+    const activeCategory = document.querySelector("[data-home-category].is-active");
+    if (activeCategory && typeof activeCategory.scrollIntoView === "function") {
+      activeCategory.scrollIntoView({
+        block: "nearest",
+        inline: "nearest",
+      });
+    }
+
+    state.shouldRevealActiveHomeCategory = false;
   }
 
   function syncFilterHintAnimation() {
