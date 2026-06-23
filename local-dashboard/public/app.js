@@ -674,7 +674,39 @@
     } else {
       state.filterDrafts[name] = [...selected, value];
     }
-    scheduleRender();
+    syncDraftFilterFieldUi(name);
+  }
+
+  function syncDraftFilterFieldUi(field) {
+    const selected = state.filterDrafts[field] || [];
+
+    const chipZone = document.querySelector(`[data-filter-chip-zone="${field}"]`);
+    if (chipZone) {
+      chipZone.innerHTML = selected.length ? `
+        <div class="filter-chip-row">
+          ${selected.map((value) => `
+            <span class="filter-chip">
+              <span>${escapeHtml(translateEntity(field, value))}</span>
+              <button type="button" class="filter-chip-remove" data-remove-draft-filter="${field}" data-remove-draft-value="${escapeAttribute(value)}" aria-label="${escapeAttribute(`${getUiText("remove_value_prefix", "Remove")} ${translateEntity(field, value)}`)}">&times;</button>
+            </span>
+          `).join("")}
+        </div>
+      ` : "";
+
+      chipZone.querySelectorAll("[data-remove-draft-filter]").forEach((button) => {
+        button.addEventListener("click", (event) => {
+          event.stopPropagation();
+          removeDraftFilterValue(button.dataset.removeDraftFilter, button.dataset.removeDraftValue);
+          commitFilterDrafts({ closeModal: false });
+        });
+      });
+    }
+
+    const resultsNode = document.querySelector(`[data-filter-results="${field}"]`);
+    if (resultsNode && resultsNode.classList.contains("is-open")) {
+      resultsNode.innerHTML = renderFilterOptionsMarkup(field);
+      bindDraftFilterToggleEvents(resultsNode);
+    }
   }
 
   function removeDraftFilterValue(name, value) {
@@ -1476,16 +1508,18 @@
       <div class="filter-modal-group">
         <label>${escapeHtml(`${getFieldLabel(field)} ${getUiText("filter_suffix", "filter")}`)}</label>
         <div class="filter-multiselect">
-          ${selected.length ? `
-          <div class="filter-chip-row">
-            ${selected.map((value) => `
-              <span class="filter-chip">
-                <span>${escapeHtml(translateEntity(field, value))}</span>
-                <button type="button" class="filter-chip-remove" data-remove-draft-filter="${field}" data-remove-draft-value="${escapeAttribute(value)}" aria-label="${escapeAttribute(`${getUiText("remove_value_prefix", "Remove")} ${translateEntity(field, value)}`)}">&times;</button>
-              </span>
-            `).join("")}
+          <div data-filter-chip-zone="${field}">
+            ${selected.length ? `
+            <div class="filter-chip-row">
+              ${selected.map((value) => `
+                <span class="filter-chip">
+                  <span>${escapeHtml(translateEntity(field, value))}</span>
+                  <button type="button" class="filter-chip-remove" data-remove-draft-filter="${field}" data-remove-draft-value="${escapeAttribute(value)}" aria-label="${escapeAttribute(`${getUiText("remove_value_prefix", "Remove")} ${translateEntity(field, value)}`)}">&times;</button>
+                </span>
+              `).join("")}
+            </div>
+            ` : ""}
           </div>
-          ` : ""}
           <button
             type="button"
             class="filter-dropdown-trigger ${isOpen ? "is-open" : ""}"

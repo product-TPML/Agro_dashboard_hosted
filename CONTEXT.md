@@ -308,9 +308,11 @@ The current filter UI on the results page uses a floating filter action button i
 Clicking that button opens a popup with:
 
 - only the filters relevant to the current table context
-- typed search within each filter field
-- multi-select results
-- selected values shown as removable chips
+- a `Tap to Select` trigger button per filter field that expands a scrollable option list
+- multi-select option list — tapping an option toggles it immediately
+- the option list stays expanded after each selection and only collapses when the trigger is tapped again
+- selected values shown as removable chips above the trigger, hidden when nothing is selected
+- no placeholder chips when nothing is selected
 - top-of-page overlay positioning instead of a bottom sheet
 - background page scroll locked while the popup is open
 - explicit `Apply Filters`
@@ -318,12 +320,18 @@ Clicking that button opens a popup with:
 
 The results page now also shows active selected-filter chips outside the popup, directly below the cards/table toggle.
 
+Filter chip visual style:
+
+- chips inside the popup and outside the popup use the same warm orange-red color scheme
+- outside chips include `cursor: pointer` and a hover state to signal interactivity
+- the chip color is intentionally distinct from the green-tinted commodity and category chips used elsewhere
+
 Current filter interaction behavior:
 
 - staged option toggles inside the popup still wait for `Apply Filters`
 - removing a selected chip inside the popup immediately applies that single removal while keeping the popup open
 - removing a selected chip from the outside chip row immediately applies that single removal and refreshes results
-- popup layout is constrained to the visual viewport so focused filter inputs stay reachable when the mobile keyboard is open
+- closing the popup without applying discards all staged draft selections
 
 ### Geography layer
 
@@ -503,7 +511,7 @@ Implemented and working:
 - cascading filters
 - custom filter dropdown menus contained within the card on mobile
 - floating filter action button on the table screen
-- top-anchored popup-based multi-select filters with typed search, removable chips, explicit apply, and clear actions
+- top-anchored popup-based multi-select filters with tap-to-expand dropdowns, removable chips, explicit apply, and clear actions
 - background scroll lock while the filter popup is open
 - outside active-filter chip row below the results layout toggle
 - immediate auto-apply when removing a selected filter chip from inside or outside the popup
