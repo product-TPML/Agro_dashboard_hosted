@@ -12,6 +12,7 @@ $seaBlobPath = Join-Path $tempDir "sea-prep.blob"
 $bootstrapPath = Join-Path $repoRoot "scripts\krama_sea_bootstrap.cjs"
 $scraperPath = Join-Path $repoRoot "scrape_krama.js"
 $outputPath = Join-Path $distDir "krama-sync.exe"
+$launcherPath = Join-Path $distDir "Launch Commodity Scraper.vbs"
 $envExamplePath = Join-Path $repoRoot ".env.example"
 $releaseReadmePath = Join-Path $repoRoot "RELEASE_README.txt"
 $postjectPath = Join-Path $repoRoot "node_modules\.bin\postject.cmd"
@@ -91,5 +92,14 @@ if (Test-Path $releaseReadmePath) {
   Copy-Item -LiteralPath $releaseReadmePath -Destination (Join-Path $distDir "README.txt") -Force
 }
 
+$launcherScript = @'
+Set shell = CreateObject("WScript.Shell")
+Set fso = CreateObject("Scripting.FileSystemObject")
+baseDir = fso.GetParentFolderName(WScript.ScriptFullName)
+exePath = """" & fso.BuildPath(baseDir, "krama-sync.exe") & """"
+shell.Run exePath, 0, False
+'@
+[System.IO.File]::WriteAllText($launcherPath, $launcherScript, [System.Text.UTF8Encoding]::new($false))
+
 Write-Host "Built executable: $outputPath"
-Write-Host "Dist folder contents now include the exe, Playwright runtime files, logs, and README."
+Write-Host "Dist folder contents now include the exe, hidden launcher, Playwright runtime files, logs, and README."

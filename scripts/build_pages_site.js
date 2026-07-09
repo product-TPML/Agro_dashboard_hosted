@@ -17,6 +17,7 @@ function main() {
       SELECT
         row_key,
         report_date,
+        source_id,
         commodity,
         perishability,
         category,
@@ -27,12 +28,18 @@ function main() {
         unit,
         min_price,
         max_price,
-        modal_price
+        modal_price,
+        canonical_price,
+        canonical_price_unit,
+        price_100_pieces,
+        price_1_piece,
+        price_1_tray
       FROM price_observations_flat
       ORDER BY report_date ASC, commodity ASC, market ASC, variety ASC, grade ASC
     `).all().map((row) => ({
       rowKey: row.row_key,
       reportDate: row.report_date,
+      sourceId: row.source_id,
       commodity: row.commodity,
       perishability: row.perishability,
       category: row.category,
@@ -44,6 +51,11 @@ function main() {
       minPrice: row.min_price,
       maxPrice: row.max_price,
       modalPrice: row.modal_price,
+      canonicalPrice: row.canonical_price,
+      canonicalPriceUnit: row.canonical_price_unit,
+      price100Pieces: row.price_100_pieces,
+      price1Piece: row.price_1_piece,
+      price1Tray: row.price_1_tray,
     }));
 
     const searchIndex = {
@@ -52,6 +64,7 @@ function main() {
       varieties: db.prepare(`
         SELECT DISTINCT commodity, variety
         FROM price_observations_flat
+        WHERE variety <> ''
         ORDER BY variety ASC, commodity ASC
       `).all().map((row) => ({
         commodity: row.commodity,
@@ -118,7 +131,9 @@ function buildCategoryData(db) {
     if (!grouped.has(row.category)) {
       grouped.set(row.category, []);
     }
-    grouped.get(row.category).push(row.commodity);
+    if (row.commodity !== "Egg") {
+      grouped.get(row.category).push(row.commodity);
+    }
   });
 
   return {

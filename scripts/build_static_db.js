@@ -63,43 +63,102 @@ function readExistingSnapshotData() {
 
   const db = new Database(DB_PATH, { readonly: true, fileMustExist: true });
   try {
-    const prices = db.prepare(`
-      SELECT
-        row_key,
-        report_date,
-        heading,
-        commodity,
-        perishability,
-        market AS "Market",
-        variety AS "Variety",
-        grade AS "Grade",
-        arrivals AS "Arrivals",
-        unit AS "Units",
-        min_price AS "Min (Rs.)",
-        max_price AS "Max (Rs.)",
-        modal_price AS "Modal (Rs.)",
-        scraped_at
-      FROM price_observations_flat
-      ORDER BY report_date ASC, commodity ASC, market ASC, variety ASC, grade ASC
-    `).all().map(trimObjectStrings);
-
-    const runs = db.prepare(`
-      SELECT
-        run_id,
-        started_at,
-        finished_at,
-        report_date,
-        status,
-        commodity_count,
-        row_count,
-        output_dir,
-        json_path,
-        csv_path,
-        log_path,
-        notes
-      FROM scrape_runs
-      ORDER BY report_date ASC, started_at ASC
-    `).all().map(trimObjectStrings);
+    const flatColumns = new Set(db.prepare("PRAGMA table_info(price_observations_flat)").all().map((row) => row.name));
+    const runColumns = new Set(db.prepare("PRAGMA table_info(scrape_runs)").all().map((row) => row.name));
+    const pricesSql = flatColumns.has("source_id")
+      ? `
+        SELECT
+          row_key,
+          report_date,
+          heading,
+          source_id,
+          commodity,
+          perishability,
+          category,
+          market AS "Market",
+          variety AS "Variety",
+          grade AS "Grade",
+          arrivals AS "Arrivals",
+          unit AS "Units",
+          min_price AS "Min (Rs.)",
+          max_price AS "Max (Rs.)",
+          modal_price AS "Modal (Rs.)",
+          canonical_price,
+          canonical_price_unit,
+          price_100_pieces,
+          price_1_piece,
+          price_1_tray,
+          scraped_at
+        FROM price_observations_flat
+        ORDER BY report_date ASC, commodity ASC, market ASC, variety ASC, grade ASC
+      `
+      : `
+        SELECT
+          row_key,
+          report_date,
+          heading,
+          'krama' AS source_id,
+          commodity,
+          perishability,
+          category,
+          market AS "Market",
+          variety AS "Variety",
+          grade AS "Grade",
+          arrivals AS "Arrivals",
+          unit AS "Units",
+          min_price AS "Min (Rs.)",
+          max_price AS "Max (Rs.)",
+          modal_price AS "Modal (Rs.)",
+          NULL AS canonical_price,
+          '' AS canonical_price_unit,
+          NULL AS price_100_pieces,
+          NULL AS price_1_piece,
+          NULL AS price_1_tray,
+          scraped_at
+        FROM price_observations_flat
+        ORDER BY report_date ASC, commodity ASC, market ASC, variety ASC, grade ASC
+      `;
+    const runsSql = runColumns.has("source_id")
+      ? `
+        SELECT
+          run_id,
+          started_at,
+          finished_at,
+          report_date,
+          status,
+          commodity_count,
+          row_count,
+          source_id,
+          sink_id,
+          output_dir,
+          json_path,
+          csv_path,
+          log_path,
+          notes
+        FROM scrape_runs
+        ORDER BY report_date ASC, started_at ASC
+      `
+      : `
+        SELECT
+          run_id,
+          started_at,
+          finished_at,
+          report_date,
+          status,
+          commodity_count,
+          row_count,
+          'legacy' AS source_id,
+          'legacy' AS sink_id,
+          output_dir,
+          json_path,
+          csv_path,
+          log_path,
+          notes
+        FROM scrape_runs
+        ORDER BY report_date ASC, started_at ASC
+      `;
+    const prices = db.prepare(pricesSql).all().map(trimObjectStrings);
+    const runs = db.prepare(runsSql).all().map(trimObjectStrings);
 
     return {
       prices: mergePriceRows(fallbackPrices, prices),
@@ -127,14 +186,21 @@ function readFallbackObservationRows() {
     heading: row.commodity,
     commodity: row.commodity,
     perishability: row.perishability || "",
+    category: row.category || "",
+    source_id: row.sourceId || "krama",
     Market: row.market,
-    Variety: row.variety,
-    Grade: row.grade,
+    Variety: row.variety || "",
+    Grade: row.grade || "",
     Arrivals: row.arrivals,
-    Units: row.unit,
+    Units: row.unit || "",
     "Min (Rs.)": row.minPrice,
     "Max (Rs.)": row.maxPrice,
     "Modal (Rs.)": row.modalPrice,
+    canonical_price: row.canonicalPrice,
+    canonical_price_unit: row.canonicalPriceUnit || "",
+    price_100_pieces: row.price100Pieces,
+    price_1_piece: row.price1Piece,
+    price_1_tray: row.price1Tray,
     scraped_at: row.scrapedAt || row.reportDate || "",
   }));
 }
@@ -283,6 +349,13 @@ function parseNumber(value, fieldName) {
   return parsed;
 }
 
+function parseOptionalNumber(value, fieldName) {
+  if (value === null || value === undefined || value === "") {
+    return null;
+  }
+  return parseNumber(value, fieldName);
+}
+
 function normalizePerishability(value) {
   const text = String(value).trim().toLowerCase();
   if (!text) {
@@ -369,13 +442,19 @@ function createSchema(db) {
       heading TEXT NOT NULL,
       commodity_id INTEGER NOT NULL REFERENCES commodities(id),
       market_id INTEGER NOT NULL REFERENCES markets(id),
-      variety_id INTEGER NOT NULL REFERENCES varieties(id),
-      grade_id INTEGER NOT NULL REFERENCES grades(id),
-      arrivals REAL NOT NULL,
-      unit_id INTEGER NOT NULL REFERENCES units(id),
-      min_price REAL NOT NULL,
-      max_price REAL NOT NULL,
-      modal_price REAL NOT NULL,
+      variety_id INTEGER REFERENCES varieties(id),
+      grade_id INTEGER REFERENCES grades(id),
+      arrivals REAL,
+      unit_id INTEGER REFERENCES units(id),
+      min_price REAL,
+      max_price REAL,
+      modal_price REAL,
+      source_id TEXT NOT NULL DEFAULT 'krama',
+      canonical_price REAL,
+      canonical_price_unit TEXT,
+      price_100_pieces REAL,
+      price_1_piece REAL,
+      price_1_tray REAL,
       scraped_at TEXT NOT NULL
     );
 
@@ -387,6 +466,8 @@ function createSchema(db) {
       status TEXT NOT NULL,
       commodity_count INTEGER NOT NULL,
       row_count INTEGER NOT NULL,
+      source_id TEXT NOT NULL DEFAULT 'legacy',
+      sink_id TEXT NOT NULL DEFAULT 'legacy',
       output_dir TEXT,
       json_path TEXT,
       csv_path TEXT,
@@ -412,19 +493,25 @@ function createSchema(db) {
       po.row_key,
       po.report_date,
       po.heading,
+      po.source_id,
       c.name AS commodity,
       COALESCE(cm.perishability, c.perishability) AS perishability,
       COALESCE(cm.category, c.category) AS category,
       m.name AS market,
       d.name AS district,
       d.slug AS district_slug,
-      v.name AS variety,
-      g.name AS grade,
+      COALESCE(v.name, '') AS variety,
+      COALESCE(g.name, '') AS grade,
       po.arrivals,
       u.name AS unit,
       po.min_price,
       po.max_price,
       po.modal_price,
+      po.canonical_price,
+      po.canonical_price_unit,
+      po.price_100_pieces,
+      po.price_1_piece,
+      po.price_1_tray,
       po.scraped_at
     FROM price_observations po
     JOIN commodities c ON c.id = po.commodity_id
@@ -432,15 +519,16 @@ function createSchema(db) {
     JOIN markets m ON m.id = po.market_id
     LEFT JOIN market_district_mapping mdm ON mdm.market_id = m.id
     LEFT JOIN districts d ON d.id = mdm.district_id
-    JOIN varieties v ON v.id = po.variety_id
-    JOIN grades g ON g.id = po.grade_id
-    JOIN units u ON u.id = po.unit_id;
+    LEFT JOIN varieties v ON v.id = po.variety_id
+    LEFT JOIN grades g ON g.id = po.grade_id
+    LEFT JOIN units u ON u.id = po.unit_id;
 
     CREATE VIEW latest_price_observations AS
     SELECT f.*
     FROM price_observations_flat f
     JOIN (
       SELECT
+        source_id,
         commodity,
         market,
         district,
@@ -448,9 +536,10 @@ function createSchema(db) {
         grade,
         MAX(report_date) AS latest_report_date
       FROM price_observations_flat
-      GROUP BY commodity, market, district, variety, grade
+       GROUP BY source_id, commodity, market, district, variety, grade
     ) latest
-      ON latest.commodity = f.commodity
+      ON latest.source_id = f.source_id
+     AND latest.commodity = f.commodity
      AND latest.market = f.market
      AND latest.district IS f.district
      AND latest.variety = f.variety
@@ -497,8 +586,14 @@ function importStaticData(db, prices, mappings, runs, geography, categoryMetadat
       min_price,
       max_price,
       modal_price,
+      source_id,
+      canonical_price,
+      canonical_price_unit,
+      price_100_pieces,
+      price_1_piece,
+      price_1_tray,
       scraped_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
   const insertRun = db.prepare(`
     INSERT INTO scrape_runs (
@@ -509,12 +604,14 @@ function importStaticData(db, prices, mappings, runs, geography, categoryMetadat
       status,
       commodity_count,
       row_count,
+      source_id,
+      sink_id,
       output_dir,
       json_path,
       csv_path,
       log_path,
       notes
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
   const insertSnapshot = db.prepare(`
     INSERT INTO source_snapshot (
@@ -533,19 +630,25 @@ function importStaticData(db, prices, mappings, runs, geography, categoryMetadat
       insertCommodity.run(
         row.commodity,
         normalizePerishability(row.perishability) || null,
-        getCommodityCategory(row.commodity, categoryLookup)
+        getCommodityCategory(row.commodity, categoryLookup, row.category)
       );
       insertMarket.run(row.Market);
-      insertVariety.run(row.Variety);
-      insertGrade.run(row.Grade);
-      insertUnit.run(row.Units);
+      if (row.Variety) {
+        insertVariety.run(row.Variety);
+      }
+      if (row.Grade) {
+        insertGrade.run(row.Grade);
+      }
+      if (row.Units) {
+        insertUnit.run(row.Units);
+      }
     }
 
     for (const row of mappings) {
       insertCommodity.run(
         row.commodity,
         normalizePerishability(row.perishability) || null,
-        getCommodityCategory(row.commodity, categoryLookup)
+        getCommodityCategory(row.commodity, categoryLookup, row.category)
       );
     }
 
@@ -561,7 +664,7 @@ function importStaticData(db, prices, mappings, runs, geography, categoryMetadat
     const unitIds = getLookupMap(db, "units");
 
     validateMarketDistrictCoverage(marketIds, geography.marketMappings, districtIds);
-    validateCommodityCategoryCoverage(commodityIds, categoryLookup);
+    validateCommodityCategoryCoverage(db, categoryLookup);
 
     for (const row of geography.marketMappings) {
       if (!marketIds.has(row.market)) {
@@ -590,13 +693,19 @@ function importStaticData(db, prices, mappings, runs, geography, categoryMetadat
         row.heading,
         commodityIds.get(row.commodity),
         marketIds.get(row.Market),
-        varietyIds.get(row.Variety),
-        gradeIds.get(row.Grade),
-        parseNumber(row.Arrivals, "Arrivals"),
-        unitIds.get(row.Units),
-        parseNumber(row["Min (Rs.)"], "Min (Rs.)"),
-        parseNumber(row["Max (Rs.)"], "Max (Rs.)"),
-        parseNumber(row["Modal (Rs.)"], "Modal (Rs.)"),
+        row.Variety ? varietyIds.get(row.Variety) : null,
+        row.Grade ? gradeIds.get(row.Grade) : null,
+        parseOptionalNumber(row.Arrivals, "Arrivals"),
+        row.Units ? unitIds.get(row.Units) : null,
+        parseOptionalNumber(row["Min (Rs.)"], "Min (Rs.)"),
+        parseOptionalNumber(row["Max (Rs.)"], "Max (Rs.)"),
+        parseOptionalNumber(row["Modal (Rs.)"], "Modal (Rs.)"),
+        row.source_id || "krama",
+        parseOptionalNumber(row.canonical_price, "canonical_price"),
+        row.canonical_price_unit || null,
+        parseOptionalNumber(row.price_100_pieces, "price_100_pieces"),
+        parseOptionalNumber(row.price_1_piece, "price_1_piece"),
+        parseOptionalNumber(row.price_1_tray, "price_1_tray"),
         row.scraped_at
       );
     }
@@ -610,6 +719,8 @@ function importStaticData(db, prices, mappings, runs, geography, categoryMetadat
         row.status,
         parseNumber(row.commodity_count, "commodity_count"),
         parseNumber(row.row_count, "row_count"),
+        row.source_id || "legacy",
+        row.sink_id || "legacy",
         row.output_dir || null,
         row.json_path || null,
         row.csv_path || null,
@@ -652,8 +763,8 @@ function buildCommodityCategoryLookup(categoryMetadata) {
   return lookup;
 }
 
-function getCommodityCategory(commodity, categoryLookup) {
-  const category = categoryLookup.get(commodity);
+function getCommodityCategory(commodity, categoryLookup, fallbackCategory = "") {
+  const category = categoryLookup.get(commodity) || normalizeCategory(fallbackCategory);
   if (!category) {
     throw new Error(`Missing commodity category mapping for: ${commodity}`);
   }
@@ -679,8 +790,11 @@ function validateMarketDistrictCoverage(marketIds, marketMappings, districtIds) 
   }
 }
 
-function validateCommodityCategoryCoverage(commodityIds, categoryLookup) {
-  const missingCommodities = [...commodityIds.keys()].filter((commodity) => !categoryLookup.has(commodity));
+function validateCommodityCategoryCoverage(db, categoryLookup) {
+  const rows = db.prepare("SELECT name, category FROM commodities").all();
+  const missingCommodities = rows
+    .filter((row) => !row.category && !categoryLookup.has(row.name))
+    .map((row) => row.name);
   if (missingCommodities.length) {
     throw new Error(`Missing commodity category mappings for commodities: ${missingCommodities.join(", ")}`);
   }

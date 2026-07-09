@@ -488,15 +488,17 @@
         throw new Error("Missing commodity.");
       }
 
+      const rows = state.allRows.filter((row) => row.commodity === route.commodity);
+
       return {
         context: {
           type: "commodity",
           heading: route.commodity,
           locked: { commodity: route.commodity },
-          filters: ["market", "variety"],
+          filters: getAvailableFilters(rows, ["market", "variety"]),
           resultLabel: `${route.commodity} (Commodity)`,
         },
-        rows: state.allRows.filter((row) => row.commodity === route.commodity),
+        rows,
       };
     }
 
@@ -505,15 +507,17 @@
         throw new Error("Missing market.");
       }
 
+      const rows = state.allRows.filter((row) => row.market === route.market);
+
       return {
         context: {
           type: "market",
           heading: route.market,
           locked: { market: route.market },
-          filters: ["commodity", "variety"],
+          filters: getAvailableFilters(rows, ["commodity", "variety"]),
           resultLabel: `${route.market} (Market)`,
         },
-        rows: state.allRows.filter((row) => row.market === route.market),
+        rows,
       };
     }
 
@@ -522,17 +526,19 @@
         throw new Error("Missing commodity or variety.");
       }
 
+      const rows = state.allRows.filter((row) => {
+        return row.commodity === route.commodity && row.variety === route.variety;
+      });
+
       return {
         context: {
           type: "variety",
           heading: `${route.commodity} / ${route.variety}`,
           locked: { commodity: route.commodity, variety: route.variety },
-          filters: ["market"],
+          filters: getAvailableFilters(rows, ["market"]),
           resultLabel: `${route.variety} (${route.commodity})`,
         },
-        rows: state.allRows.filter((row) => {
-          return row.commodity === route.commodity && row.variety === route.variety;
-        }),
+        rows,
       };
     }
 
@@ -845,6 +851,7 @@
 
   function buildLatestRowGroupKey(row) {
     return [
+      row.sourceId || "krama",
       row.commodity,
       row.market,
       row.variety,
@@ -892,6 +899,7 @@
 
     return state.baseRows
       .filter((row) => {
+        if (row.sourceId !== selectedRow.sourceId) return false;
         if (row.commodity !== selectedRow.commodity) return false;
         if (row.market !== selectedRow.market) return false;
         if (row.variety !== selectedRow.variety) return false;
@@ -900,6 +908,144 @@
         return currentDate >= startDate && currentDate <= endDate;
       })
       .sort((left, right) => left.reportDate.localeCompare(right.reportDate));
+  }
+
+  function getAvailableFilters(rows, candidates) {
+    return candidates.filter((field) => rowsHaveValues(rows, field));
+  }
+
+  function rowsHaveValues(rows, field) {
+    return rows.some((row) => String(row[field] || "").trim());
+  }
+
+  function hasArrivalsData(row) {
+    return row.arrivals !== null && row.arrivals !== undefined && row.arrivals !== ""
+      && String(row.unit || "").trim();
+  }
+
+  function getRowPriceMode(row) {
+    return row && row.sourceId === "necc_egg" ? "single" : "triple";
+  }
+
+  function getCanonicalPriceKey(row) {
+    if (row && row.sourceId === "necc_egg") {
+      return "price100Pieces";
+    }
+    return "modalPrice";
+  }
+
+  function getCanonicalPriceLabel(row) {
+    if (row && row.sourceId === "necc_egg") {
+      return getUiText("price_100_pieces_label", "Price (100 pieces)");
+    }
+    return getUiText("modal_short", "Modal");
+  }
+
+  function getPriceHeaders(mode) {
+    if (mode === "single") {
+      return [
+        getUiText("price_100_pieces_label", "Price (100 pieces)"),
+        getUiText("price_1_piece_label", "Price (1 piece)"),
+        getUiText("price_1_tray_label", "Price (1 tray)"),
+      ];
+    }
+    return [
+      getUiText("max_price_rs", "Max Price (Rs.)"),
+      getUiText("min_price_rs", "Min Price (Rs.)"),
+      getUiText("modal_price_rs", "Modal Price (Rs.)"),
+    ];
+  }
+
+  function buildMetaEntries(entries) {
+    return entries.filter((entry) => String(entry.value || "").trim());
+  }
+
+  function buildResultCells(row, leadingCells, includeVariety, includeGrade) {
+    const cells = leadingCells.map((entry) => {
+      const value = entry.kind === "commodity"
+        ? translateEntity("commodity", row.commodity)
+        : translateEntity("market", row.market);
+      return `<td${entry.primary ? ' class="result-col-primary"' : ""}>${escapeHtml(value)}</td>`;
+    });
+    if (includeVariety) {
+      cells.push(`<td>${escapeHtml(translateEntity("variety", row.variety))}</td>`);
+    }
+    if (includeGrade) {
+      cells.push(`<td>${escapeHtml(row.grade || "-")}</td>`);
+    }
+    return cells;
+  }
+
+  function renderPriceSection(row, previousRow, priceMode, canonicalKey) {
+    if (priceMode === "single") {
+      return [
+        renderPriceGroup("max", getUiText("price_100_pieces_label", "Price (100 pieces)"), row.price100Pieces, getPreviousPriceDelta(row, canonicalKey, previousRow)),
+        renderPriceGroup("min", getUiText("price_1_piece_label", "Price (1 piece)"), row.price1Piece, null),
+        renderPriceGroup("modal", getUiText("price_1_tray_label", "Price (1 tray)"), row.price1Tray, null),
+      ].join("");
+    }
+
+    return [
+      renderPriceGroup("max", getUiText("max_price_rs", "Max Price (Rs.)"), row.maxPrice, getPreviousPriceDelta(row, "maxPrice", previousRow)),
+      renderPriceGroup("min", getUiText("min_price_rs", "Min Price (Rs.)"), row.minPrice, getPreviousPriceDelta(row, "minPrice", previousRow)),
+      renderPriceGroup("modal", getUiText("modal_price_rs", "Modal Price (Rs.)"), row.modalPrice, getPreviousPriceDelta(row, "modalPrice", previousRow)),
+    ].join("");
+  }
+
+  function renderPriceColumns(row, previousRow, priceMode, canonicalKey) {
+    if (priceMode === "single") {
+      return `
+        <td class="result-col-price">
+          <span class="price-value price-value-max">${formatCurrency(row.price100Pieces)}</span>
+          ${renderPriceDelta(getPreviousPriceDelta(row, canonicalKey, previousRow))}
+        </td>
+        <td class="result-col-price">
+          <span class="price-value price-value-min">${formatCurrency(row.price1Piece)}</span>
+        </td>
+        <td class="result-col-price">
+          <span class="price-value price-value-modal">${formatCurrency(row.price1Tray)}</span>
+        </td>
+      `;
+    }
+
+    return `
+      <td class="result-col-price">
+        <span class="price-value price-value-max">${formatCurrency(row.maxPrice)}</span>
+        ${renderPriceDelta(getPreviousPriceDelta(row, "maxPrice", previousRow))}
+      </td>
+      <td class="result-col-price">
+        <span class="price-value price-value-min">${formatCurrency(row.minPrice)}</span>
+        ${renderPriceDelta(getPreviousPriceDelta(row, "minPrice", previousRow))}
+      </td>
+      <td class="result-col-price">
+        <span class="price-value price-value-modal">${formatCurrency(row.modalPrice)}</span>
+        ${renderPriceDelta(getPreviousPriceDelta(row, "modalPrice", previousRow))}
+      </td>
+    `;
+  }
+
+  function getChartMetricKeys(mode) {
+    if (mode === "single") {
+      return [
+        { key: "price100Pieces", color: PRICE_COLORS.max, strokeWidth: "3.5", dashArray: "" },
+      ];
+    }
+    return [
+      { key: "minPrice", color: PRICE_COLORS.min, strokeWidth: "3", dashArray: "" },
+      { key: "modalPrice", color: PRICE_COLORS.modal, strokeWidth: "3", dashArray: "10 6" },
+      { key: "maxPrice", color: PRICE_COLORS.max, strokeWidth: "3.5", dashArray: "" },
+    ];
+  }
+
+  function formatArrivalsUnits(row) {
+    return `${formatNumber(row.arrivals)} ${row.unit}`;
+  }
+
+  function getTrendNote(row) {
+    if (row && row.sourceId === "necc_egg") {
+      return getUiText("trend_note_egg", "Trend is shown for this exact commodity and market combination.");
+    }
+    return getUiText("trend_note", "Trend is shown for this exact commodity, market, variety, and grade combination.");
   }
 
   function formatLockedHeadings() {
@@ -1668,12 +1814,11 @@
   }
 
   function renderResultsTableHeaderCells(columns) {
+    const priceHeaders = getPriceHeaders(columns.mode);
     return `
       ${columns.headers.map((header) => `<th>${escapeHtml(header)}</th>`).join("")}
-      <th>${escapeHtml(getUiText("arrivals_units_header", "Arrivals & Units"))}</th>
-      <th>${escapeHtml(getUiText("max_price_rs", "Max Price (Rs.)"))}</th>
-      <th>${escapeHtml(getUiText("min_price_rs", "Min Price (Rs.)"))}</th>
-      <th>${escapeHtml(getUiText("modal_price_rs", "Modal Price (Rs.)"))}</th>
+      ${columns.showArrivals ? `<th>${escapeHtml(getUiText("arrivals_units_header", "Arrivals & Units"))}</th>` : ""}
+      ${priceHeaders.map((header) => `<th>${escapeHtml(header)}</th>`).join("")}
       <th>${escapeHtml(getUiText("latest_update", "Latest Update"))}</th>
       <th>${escapeHtml(getUiText("previous_update", "Previous Update"))}</th>
     `;
@@ -1681,51 +1826,94 @@
 
   function getTableColumns() {
     const type = state.context ? state.context.type : "";
-    const fixed = 6;
+    const sampleRow = state.cachedVisibleRows[0] || state.baseRows[0] || null;
+    const mode = getRowPriceMode(sampleRow);
+    const showArrivals = sampleRow ? hasArrivalsData(sampleRow) : true;
+    const fixed = 2 + getPriceHeaders(mode).length + (showArrivals ? 1 : 0);
+    const includeVariety = state.context && state.context.filters.includes("variety");
+    const includeGrade = rowsHaveValues(state.baseRows, "grade");
 
     if (type === "market") {
+      const headers = [getUiText("field_commodity", "Commodity")];
+      if (includeVariety) {
+        headers.push(getUiText("field_variety", "Variety"));
+      }
+      if (includeGrade) {
+        headers.push(getUiText("field_grade", "Grade"));
+      }
       return {
-        headers: [getUiText("field_commodity", "Commodity"), getUiText("field_variety", "Variety"), getUiText("field_grade", "Grade")],
-        getCells: (row) => [
-          `<td class="result-col-primary">${escapeHtml(translateEntity("commodity", row.commodity))}</td>`,
-          `<td>${escapeHtml(translateEntity("variety", row.variety))}</td>`,
-          `<td>${escapeHtml(row.grade)}</td>`,
-        ],
-        count: 3 + fixed,
+        headers,
+        showArrivals,
+        mode,
+        getCells: (row) => buildResultCells(
+          row,
+          [{ kind: "commodity", primary: true }],
+          includeVariety,
+          includeGrade
+        ),
+        count: headers.length + fixed,
       };
     }
 
     if (type === "commodity") {
+      const headers = [getUiText("field_market", "Market")];
+      if (includeVariety) {
+        headers.push(getUiText("field_variety", "Variety"));
+      }
+      if (includeGrade) {
+        headers.push(getUiText("field_grade", "Grade"));
+      }
       return {
-        headers: [getUiText("field_market", "Market"), getUiText("field_variety", "Variety"), getUiText("field_grade", "Grade")],
-        getCells: (row) => [
-          `<td class="result-col-primary">${escapeHtml(translateEntity("market", row.market))}</td>`,
-          `<td>${escapeHtml(translateEntity("variety", row.variety))}</td>`,
-          `<td>${escapeHtml(row.grade)}</td>`,
-        ],
-        count: 3 + fixed,
+        headers,
+        showArrivals,
+        mode,
+        getCells: (row) => buildResultCells(
+          row,
+          [{ kind: "market", primary: true }],
+          includeVariety,
+          includeGrade
+        ),
+        count: headers.length + fixed,
       };
     }
 
     if (type === "variety") {
+      const headers = [getUiText("field_market", "Market")];
+      if (includeGrade) {
+        headers.push(getUiText("field_grade", "Grade"));
+      }
       return {
-        headers: [getUiText("field_market", "Market"), getUiText("field_grade", "Grade")],
-        getCells: (row) => [
-          `<td class="result-col-primary">${escapeHtml(translateEntity("market", row.market))}</td>`,
-          `<td>${escapeHtml(row.grade)}</td>`,
-        ],
-        count: 2 + fixed,
+        headers,
+        showArrivals,
+        mode,
+        getCells: (row) => buildResultCells(
+          row,
+          [{ kind: "market", primary: true }],
+          false,
+          includeGrade
+        ),
+        count: headers.length + fixed,
       };
     }
 
+    const headers = [getUiText("field_market", "Market")];
+    if (includeVariety) {
+      headers.push(getUiText("field_variety", "Variety"));
+    }
+    if (includeGrade) {
+      headers.push(getUiText("field_grade", "Grade"));
+    }
     return {
-      headers: [getUiText("field_market", "Market"), getUiText("field_variety", "Variety"), getUiText("field_grade", "Grade")],
-      getCells: (row) => [
-        `<td class="result-col-primary">${escapeHtml(translateEntity("market", row.market))}</td>`,
-        `<td>${escapeHtml(translateEntity("variety", row.variety))}</td>`,
-        `<td>${escapeHtml(row.grade)}</td>`,
-      ],
-      count: 3 + fixed,
+      headers,
+      showArrivals,
+      mode,
+      getCells: (row) => buildResultCells(
+        row,
+        [{ kind: "market", primary: true }],
+        includeVariety,
+        includeGrade
+      ),
+      count: headers.length + fixed,
     };
   }
 
@@ -1736,10 +1924,10 @@
       return {
         titleLabel: getUiText("field_commodity", "Commodity"),
         titleValue: translateEntity("commodity", row.commodity),
-        meta: [
+        meta: buildMetaEntries([
           { label: getUiText("field_variety", "Variety"), value: translateEntity("variety", row.variety) },
           { label: getUiText("field_grade", "Grade"), value: row.grade },
-        ],
+        ]),
       };
     }
 
@@ -1747,10 +1935,10 @@
       return {
         titleLabel: getUiText("field_market", "Market"),
         titleValue: translateEntity("market", row.market),
-        meta: [
+        meta: buildMetaEntries([
           { label: getUiText("field_variety", "Variety"), value: translateEntity("variety", row.variety) },
           { label: getUiText("field_grade", "Grade"), value: row.grade },
-        ],
+        ]),
       };
     }
 
@@ -1758,21 +1946,21 @@
       return {
         titleLabel: getUiText("field_market", "Market"),
         titleValue: translateEntity("market", row.market),
-        meta: [
+        meta: buildMetaEntries([
           { label: getUiText("field_variety", "Variety"), value: translateEntity("variety", row.variety) },
           { label: getUiText("field_grade", "Grade"), value: row.grade },
-        ],
+        ]),
       };
     }
 
     return {
       titleLabel: getUiText("field_market", "Market"),
       titleValue: translateEntity("market", row.market),
-      meta: [
+      meta: buildMetaEntries([
         { label: getUiText("field_commodity", "Commodity"), value: translateEntity("commodity", row.commodity) },
         { label: getUiText("field_variety", "Variety"), value: translateEntity("variety", row.variety) },
         { label: getUiText("field_grade", "Grade"), value: row.grade },
-      ],
+      ]),
     };
   }
 
@@ -1780,6 +1968,8 @@
     const isExpanded = row.rowKey === state.expandedRowKey;
     const historyRows = isExpanded ? getHistoryRows(row) : [];
     const presentation = getCardPresentation(row);
+    const priceMode = getRowPriceMode(row);
+    const canonicalKey = getCanonicalPriceKey(row);
     const previousRow = getPreviousComparableRow(row);
     return `
       <article class="result-card ${isExpanded ? "is-expanded" : ""}" data-row-key="${escapeAttribute(row.rowKey)}">
@@ -1799,16 +1989,16 @@
           </section>
 
           <section class="result-card-prices">
-            ${renderPriceGroup("max", getUiText("max_price_rs", "Max Price (Rs.)"), row.maxPrice, getPreviousPriceDelta(row, "maxPrice", previousRow))}
-            ${renderPriceGroup("min", getUiText("min_price_rs", "Min Price (Rs.)"), row.minPrice, getPreviousPriceDelta(row, "minPrice", previousRow))}
-            ${renderPriceGroup("modal", getUiText("modal_price_rs", "Modal Price (Rs.)"), row.modalPrice, getPreviousPriceDelta(row, "modalPrice", previousRow))}
+            ${renderPriceSection(row, previousRow, priceMode, canonicalKey)}
           </section>
 
           <section class="result-card-details">
+            ${hasArrivalsData(row) ? `
             <div class="result-detail-block">
               <span class="result-detail-label">${escapeHtml(getUiText("arrivals_and_units", "Arrivals And Units"))}</span>
-              <span class="result-detail-value">${escapeHtml(`${formatNumber(row.arrivals)} ${row.unit}`)}</span>
+              <span class="result-detail-value">${escapeHtml(formatArrivalsUnits(row))}</span>
             </div>
+            ` : ""}
             <div class="result-detail-block">
               <span class="result-detail-label">${escapeHtml(getUiText("price_updates", "Price Updates"))}</span>
               <div class="date-stack">
@@ -1842,23 +2032,14 @@
   function renderResultRow(row, columns) {
     const isExpanded = row.rowKey === state.expandedRowKey;
     const historyRows = isExpanded ? getHistoryRows(row) : [];
+    const priceMode = columns.mode || getRowPriceMode(row);
+    const canonicalKey = getCanonicalPriceKey(row);
     const previousRow = getPreviousComparableRow(row);
     return `
       <tr class="result-row ${isExpanded ? "is-expanded" : ""}" data-toggle-history="${escapeAttribute(row.rowKey)}">
         ${columns.getCells(row).join("")}
-        <td>${escapeHtml(`${formatNumber(row.arrivals)} ${row.unit}`)}</td>
-        <td class="result-col-price">
-          <span class="price-value price-value-max">${formatCurrency(row.maxPrice)}</span>
-          ${renderPriceDelta(getPreviousPriceDelta(row, "maxPrice", previousRow))}
-        </td>
-        <td class="result-col-price">
-          <span class="price-value price-value-min">${formatCurrency(row.minPrice)}</span>
-          ${renderPriceDelta(getPreviousPriceDelta(row, "minPrice", previousRow))}
-        </td>
-        <td class="result-col-price">
-          <span class="price-value price-value-modal">${formatCurrency(row.modalPrice)}</span>
-          ${renderPriceDelta(getPreviousPriceDelta(row, "modalPrice", previousRow))}
-        </td>
+        ${columns.showArrivals ? `<td>${escapeHtml(formatArrivalsUnits(row))}</td>` : ""}
+        ${renderPriceColumns(row, previousRow, priceMode, canonicalKey)}
         <td>${escapeHtml(formatDateFull(row.reportDate))}</td>
         <td>${escapeHtml(previousRow ? formatDateFull(previousRow.reportDate) : "-")}</td>
       </tr>
@@ -1889,6 +2070,7 @@
   function getPreviousComparableRow(row) {
     return state.baseRows
       .filter((candidate) => {
+        if (candidate.sourceId !== row.sourceId) return false;
         if (candidate.commodity !== row.commodity) return false;
         if (candidate.market !== row.market) return false;
         if (candidate.variety !== row.variety) return false;
@@ -1902,6 +2084,11 @@
     const comparableRow = previousRow || getPreviousComparableRow(row);
 
     if (!comparableRow) {
+      return null;
+    }
+
+    if (row[priceKey] === null || row[priceKey] === undefined || row[priceKey] === ""
+      || comparableRow[priceKey] === null || comparableRow[priceKey] === undefined || comparableRow[priceKey] === "") {
       return null;
     }
 
@@ -1960,9 +2147,9 @@
               ${renderChart(historyRows, activePoint, row.rowKey)}
             </div>
             <div class="chart-summary-shell">
-              ${renderChartSummary(activePoint)}
+              ${renderChartSummary(activePoint, row)}
             </div>
-            <div class="axis-note">${escapeHtml(getUiText("trend_note", "Trend is shown for this exact commodity, market, variety, and grade combination."))}</div>
+            <div class="axis-note">${escapeHtml(getTrendNote(row))}</div>
           </div>
         </div>
         <div class="history-collapse-wrap">
@@ -1979,6 +2166,9 @@
       return `<p class="muted">${escapeHtml(getUiText("no_historical_points", "No historical points are available inside the required time window."))}</p>`;
     }
 
+    const priceMode = getRowPriceMode(rows[0]);
+    const chartMetricKeys = getChartMetricKeys(priceMode);
+    const canonicalKey = getCanonicalPriceKey(rows[0]);
     const axisWidth = 25;
     const chartRows = rows.length === 1
       ? [
@@ -1987,6 +2177,8 @@
             minPrice: 0,
             maxPrice: 0,
             modalPrice: 0,
+            canonicalPrice: 0,
+            price100Pieces: 0,
             isBaseline: true,
           },
           {
@@ -2000,7 +2192,11 @@
     const paddingX = 38;
     const paddingTop = 18;
     const paddingBottom = 44;
-    const values = chartRows.flatMap((row) => [row.minPrice, row.maxPrice, row.modalPrice]);
+    const values = chartRows.flatMap((entry) => {
+      return chartMetricKeys
+        .map((metric) => entry[metric.key])
+        .filter((value) => value !== null && value !== undefined && value !== "");
+    });
     const chartScale = buildChartScale(values);
     const xStep = (width - paddingX * 2) / Math.max(chartRows.length - 1, 1);
 
@@ -2010,9 +2206,10 @@
       return height - paddingBottom - normalized * (height - paddingTop - paddingBottom);
     };
 
-    const minPath = buildLinePath(chartRows.map((row, index) => [toX(index), toY(row.minPrice)]));
-    const maxPath = buildLinePath(chartRows.map((row, index) => [toX(index), toY(row.maxPrice)]));
-    const modalPath = buildLinePath(chartRows.map((row, index) => [toX(index), toY(row.modalPrice)]));
+    const metricPaths = chartMetricKeys.map((metric) => ({
+      ...metric,
+      path: buildLinePath(chartRows.map((entry, index) => [toX(index), toY(entry[metric.key])])),
+    }));
     const activeIndex = chartRows.findIndex((row) => !row.isBaseline && row.reportDate === activePoint.reportDate);
     const activeX = toX(activeIndex);
     const labels = chartRows.map((row, index) => `
@@ -2036,16 +2233,11 @@
 
     const pointTargets = chartRows.map((row, index) => {
       const x = toX(index);
-      const maxY = toY(row.maxPrice);
-      const minY = toY(row.minPrice);
-      const modalY = toY(row.modalPrice);
       const isActive = !row.isBaseline && row.reportDate === activePoint.reportDate;
       return `
         <g${row.isBaseline ? "" : ` data-chart-date="${escapeAttribute(row.reportDate)}"`} class="chart-point-group ${isActive ? "is-active" : ""} ${row.isBaseline ? "is-baseline" : ""}">
           <line x1="${x}" y1="${paddingTop}" x2="${x}" y2="${height - paddingBottom}" stroke="${isActive ? "#adb7d8" : "transparent"}" stroke-dasharray="5 5" />
-          ${renderChartPointCircle(x, maxY, PRICE_COLORS.max, isActive)}
-          ${renderChartPointCircle(x, minY, PRICE_COLORS.min, isActive)}
-          ${renderChartPointCircle(x, modalY, PRICE_COLORS.modal, isActive)}
+          ${chartMetricKeys.map((metric) => renderChartPointCircle(x, toY(row[metric.key]), metric.color, isActive)).join("")}
           <rect x="${x - 20}" y="${paddingTop}" width="40" height="${height - paddingTop - paddingBottom}" fill="transparent" />
         </g>
       `;
@@ -2071,9 +2263,9 @@
         >
           <svg viewBox="0 0 ${width} ${height}" width="${width}" height="${height}" role="img" aria-label="${escapeAttribute(getUiText("price_history_aria", "Price history"))}" data-chart-root="true">
             ${gridLines}
-            <path d="${minPath}" fill="none" stroke="${PRICE_COLORS.min}" stroke-width="3" />
-            <path d="${modalPath}" fill="none" stroke="${PRICE_COLORS.modal}" stroke-width="3" stroke-dasharray="10 6" />
-            <path d="${maxPath}" fill="none" stroke="${PRICE_COLORS.max}" stroke-width="3.5" />
+            ${metricPaths.map((metric) => `
+              <path d="${metric.path}" fill="none" stroke="${metric.color}" stroke-width="${metric.strokeWidth}"${metric.dashArray ? ` stroke-dasharray="${metric.dashArray}"` : ""} />
+            `).join("")}
             ${pointTargets}
             ${labels}
           </svg>
@@ -2082,9 +2274,26 @@
     `;
   }
 
-  function renderChartSummary(activePoint) {
+  function renderChartSummary(activePoint, row) {
     if (!activePoint) {
       return "";
+    }
+
+    if (getRowPriceMode(row) === "single") {
+      return `
+        <div class="chart-summary">
+          <div class="chart-summary-date">
+            <span class="chart-summary-date-label">${escapeHtml(getUiText("selected_date", "Selected Date"))}</span>
+            <strong class="chart-summary-date-value">${escapeHtml(formatDateFull(activePoint.reportDate))}</strong>
+          </div>
+          <div class="chart-summary-metrics">
+            <span class="chart-metric chart-metric-max chart-metric-slot-max">
+              <span class="chart-metric-label"><span class="chart-metric-line chart-metric-line-max"></span>${escapeHtml(getCanonicalPriceLabel(row))}</span>
+              <span class="chart-metric-value">${formatCurrency(activePoint[getCanonicalPriceKey(row)])}</span>
+            </span>
+          </div>
+        </div>
+      `;
     }
 
     return `
@@ -3549,10 +3758,16 @@
   }
 
   function formatCurrency(value) {
+    if (value === null || value === undefined || value === "") {
+      return "-";
+    }
     return Number(value).toLocaleString("en-IN");
   }
 
   function formatNumber(value) {
+    if (value === null || value === undefined || value === "") {
+      return "-";
+    }
     return Number(value).toLocaleString("en-IN");
   }
 
@@ -3854,4 +4069,3 @@
     return escapeHtml(value);
   }
 })();
-

@@ -28,6 +28,7 @@ const commodityCategoryStmt = db.prepare(`
 const varietyStmt = db.prepare(`
   SELECT DISTINCT commodity, variety
   FROM price_observations_flat
+  WHERE variety <> ''
   ORDER BY variety ASC, commodity ASC
 `);
 const mapDistrictsStmt = db.prepare(`
@@ -46,6 +47,7 @@ const contextStatements = {
     SELECT
       row_key,
       report_date,
+      source_id,
       commodity,
       perishability,
       category,
@@ -56,7 +58,12 @@ const contextStatements = {
       unit,
       min_price,
       max_price,
-      modal_price
+      modal_price,
+      canonical_price,
+      canonical_price_unit,
+      price_100_pieces,
+      price_1_piece,
+      price_1_tray
     FROM price_observations_flat
     WHERE commodity = ?
     ORDER BY market ASC, variety ASC, grade ASC, report_date DESC
@@ -65,6 +72,7 @@ const contextStatements = {
     SELECT
       row_key,
       report_date,
+      source_id,
       commodity,
       perishability,
       category,
@@ -75,7 +83,12 @@ const contextStatements = {
       unit,
       min_price,
       max_price,
-      modal_price
+      modal_price,
+      canonical_price,
+      canonical_price_unit,
+      price_100_pieces,
+      price_1_piece,
+      price_1_tray
     FROM price_observations_flat
     WHERE market = ?
     ORDER BY commodity ASC, variety ASC, grade ASC, report_date DESC
@@ -84,6 +97,7 @@ const contextStatements = {
     SELECT
       row_key,
       report_date,
+      source_id,
       commodity,
       perishability,
       category,
@@ -94,7 +108,12 @@ const contextStatements = {
       unit,
       min_price,
       max_price,
-      modal_price
+      modal_price,
+      canonical_price,
+      canonical_price_unit,
+      price_100_pieces,
+      price_1_piece,
+      price_1_tray
     FROM price_observations_flat
     WHERE commodity = ? AND variety = ?
     ORDER BY market ASC, grade ASC, report_date DESC
@@ -225,7 +244,7 @@ function handleContext(requestUrl, res) {
       type,
       heading: commodity,
       locked: { commodity },
-      filters: ["market", "variety"],
+      filters: getAvailableFilters(rows, ["market", "variety"]),
       resultLabel: `${commodity} (Commodity)`,
     };
   } else if (type === "market") {
@@ -238,7 +257,7 @@ function handleContext(requestUrl, res) {
       type,
       heading: market,
       locked: { market },
-      filters: ["commodity", "variety"],
+      filters: getAvailableFilters(rows, ["commodity", "variety"]),
       resultLabel: `${market} (Market)`,
     };
   } else {
@@ -252,7 +271,7 @@ function handleContext(requestUrl, res) {
       type,
       heading: `${commodity} / ${variety}`,
       locked: { commodity, variety },
-      filters: ["market"],
+      filters: getAvailableFilters(rows, ["market"]),
       resultLabel: `${variety} (${commodity})`,
     };
   }
@@ -262,6 +281,7 @@ function handleContext(requestUrl, res) {
     rows: rows.map((row) => ({
       rowKey: row.row_key,
       reportDate: row.report_date,
+      sourceId: row.source_id,
       commodity: row.commodity,
       perishability: row.perishability,
       category: row.category,
@@ -273,6 +293,11 @@ function handleContext(requestUrl, res) {
       minPrice: row.min_price,
       maxPrice: row.max_price,
       modalPrice: row.modal_price,
+      canonicalPrice: row.canonical_price,
+      canonicalPriceUnit: row.canonical_price_unit,
+      price100Pieces: row.price_100_pieces,
+      price1Piece: row.price_1_piece,
+      price1Tray: row.price_1_tray,
     })),
   });
 }
@@ -331,7 +356,9 @@ function buildCategoryIndex() {
     if (!grouped.has(row.category)) {
       grouped.set(row.category, []);
     }
-    grouped.get(row.category).push(row.commodity);
+    if (row.commodity !== "Egg") {
+      grouped.get(row.category).push(row.commodity);
+    }
   });
 
   return {
@@ -365,6 +392,12 @@ function compareSearchResults(left, right) {
     return left.sortKey.length - right.sortKey.length;
   }
   return left.sortKey.value.localeCompare(right.sortKey.value);
+}
+
+function getAvailableFilters(rows, candidates) {
+  return candidates.filter((field) => {
+    return rows.some((row) => String(row[field] || "").trim());
+  });
 }
 
 function serveStatic(requestPath, res) {

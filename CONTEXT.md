@@ -2,26 +2,37 @@
 
 ## Purpose
 
-This repo is currently being used to build a **local commodity dashboard** backed by a **static local SQLite database**.
+This repo is currently being used to build a **local commodity dashboard** backed by a **local SQLite database**, plus a **desktop-friendly local scraper** that can write directly into that database.
 
-The active goal is:
+The active goals are:
 
 - use the current May-June 2026 workbook snapshot as the development dataset
 - serve a local dashboard without Google Sheets dependencies
-- keep the dataset read-only during the current phase
+- keep the workbook-to-DB rebuild flow for baseline data
+- route active scraper output into the local DB instead of Google Sheets by default
+- support multiple scraper sources behind one UI entry point
 - implement the search-first dashboard flow from the wireframes
 
-This repo is **not** operating as a live sync pipeline right now.
+This repo is **not** operating as a hosted live sync pipeline right now, but it **does** support local scraper writes into the SQLite DB.
 
 ## Current Source of Truth
 
-The current source workbook is:
+The current baseline source workbook is:
 
 - `Agro Dashboard - new data.xlsx`
 
 That workbook is converted into the local SQLite database:
 
 - `data/agro_dashboard.db`
+
+The same database is also updated by the local scraper UI/CLI for supported live sources:
+
+- `krama`
+- `necc_egg`
+- `csb_silk`
+- `rubber_board`
+- `spices_board`
+- `coffee_board`
 
 Rebuild command:
 
@@ -34,6 +45,8 @@ Current development shape:
 - `Agro Dashboard - new data.xlsx` -> `data/agro_dashboard.db` -> `local-dashboard/server.js` -> browser UI
 - `Agro Dashboard - new data.xlsx` -> `data/agro_dashboard.db` -> `scripts/build_pages_site.js` -> `docs/` static site
 - `scripts/commodity_category_mapping.json` -> `data/agro_dashboard.db` -> category-aware home UI and API payloads
+- `scrape_krama.js` -> `data/agro_dashboard.db` -> dashboard/API/static export reads
+- `Launch Commodity Scraper.vbs` -> `scrape_krama.js` -> local DB + local run logs
 
 Current runtime commands:
 
@@ -51,17 +64,19 @@ The static GitHub Pages-style build is generated into:
 
 ## Active Assumptions
 
-The dataset is static for the current phase.
+The workbook snapshot remains the baseline dataset for rebuilds, but the active local DB is no longer strictly read-only.
 
 That means:
 
-- no inserts
-- no updates
+- workbook rebuild still recreates the DB structure from the Excel snapshot
+- scraper runs can insert or update rows in `price_observations`
+- scraper runs write execution metadata into `scrape_runs`
+- local log/json/csv outputs are written into repo-local output folders per run
+- no automatic retention pruning currently exists in the DB layer
 - no deletes
-- no rolling retention
 - no live Google Sheets sync
 
-If the workbook changes, the database is rebuilt from scratch.
+If the workbook changes, the database can still be rebuilt from scratch. The rebuild script is also designed to preserve compatible existing DB rows when rebuilding over an existing local DB.
 
 ## Main Files
 
@@ -78,7 +93,7 @@ If the workbook changes, the database is rebuilt from scratch.
   Short notes on schema and rebuild usage.
 
 - `scripts/build_static_db.js`
-  Recreates the SQLite database from the workbook.
+  Recreates the SQLite database from the workbook and preserves compatible existing DB rows during rebuild.
 
 - `scripts/commodity_category_mapping.json`
   Source file for commodity category metadata used to group commodities into the home-screen category rails.
@@ -96,7 +111,7 @@ If the workbook changes, the database is rebuilt from scratch.
   Dashboard styling.
 
 - `local-dashboard/public/app.js`
-  Client-side dashboard logic, routing, search, category rails, custom filter dropdowns, card rendering, inline history, and map interactions.
+  Client-side dashboard logic, routing, search, category rails, source-aware custom filter dropdowns, card rendering, inline history, and map interactions.
 
 - `local-dashboard/public/translations.json`
   Unified translation source for UI copy plus commodity, market, and variety labels in English and Kannada, with English fallback when Kannada entries are blank or missing.
@@ -104,11 +119,17 @@ If the workbook changes, the database is rebuilt from scratch.
 - `package.json`
   Contains both `build:static-db` and `dashboard:local`.
 
+- `scrape_krama.js`
+  Active local scraper entry point. Supports multiple sources, direct SQLite writes, run logging, and the desktop UI flow.
+
+- `Launch Commodity Scraper.vbs`
+  Double-click launcher for the scraper UI so non-terminal users can run scraping locally.
+
+- `scripts/build_krama_exe.ps1`
+  Packaging helper that prepares the scraper distribution, including the launcher.
+
 - `appscript/`
   Legacy Google Apps Script dashboard and mapping UI. Kept only as reference.
-
-- `scrape_krama.js`
-  Legacy KRAMA scraper from the earlier Sheets-based workflow. Not part of the active local dashboard path.
 
 ## Database Model
 
@@ -134,11 +155,11 @@ The SQLite database is normalized for clean reads.
   Denormalized view for dashboard reads
 
 - `latest_price_observations`
-  Latest available row per `commodity + market + variety + grade`
+  Latest available row per `source_id + commodity + market + district + variety + grade`
 
 ## Imported Dataset Summary
 
-Current static snapshot:
+Current workbook-seeded snapshot:
 
 - `price_observations`: 34,503 rows
 - `commodity_mapping`: 135 rows
@@ -183,11 +204,42 @@ Active row-level fields used in the dashboard:
 13. `modal_price`
 14. `scraped_at`
 
+Additional active row-level fields now used for multi-source support:
+
+15. `source_id`
+16. `canonical_price`
+17. `canonical_price_unit`
+18. `price_100_pieces`
+19. `price_1_piece`
+20. `price_1_tray`
+
 The flattened read view now also includes:
 
 1. `district`
 2. `district_slug`
 3. `category`
+
+### Multi-source DB semantics
+
+The local DB now supports source-aware rows and scraper-run logging.
+
+Current write behavior:
+
+- `row_key` is unique
+- scraper writes use upsert behavior on `row_key`
+- duplicate incoming rows do not create duplicate records; they update the existing record for that same `row_key`
+- `scrape_runs` stores one row per execution attempt, including source/sink metadata and output file paths
+
+Current source ids:
+
+- `krama`
+- `necc_egg`
+- `legacy` is retained for older imported run records where needed
+
+Current sink ids:
+
+- `sqlite_local`
+- `google_sheets` remains as legacy/backward-compatible sink support, but local DB is the default active path
 
 ### Commodity metadata
 
@@ -222,6 +274,8 @@ The home screen currently includes:
 
 Search remains the primary navigation path. The category browser and district map now act as secondary discovery paths from the same landing screen.
 
+`Egg` is intentionally excluded from the home category rails right now and is reachable through search/results flows instead.
+
 ### Home category rail behavior
 
 The home screen now includes a category-first browsing layer below the search bar and above the district map.
@@ -237,6 +291,7 @@ Current behavior:
 - category labels are localized for English and Kannada
 - commodity labels in the rail use the existing translation system
 - category and commodity chips both include lightweight icons
+- commodities with `commodity = Egg` are excluded from the home category rail payload
 
 Current layout details:
 
@@ -282,17 +337,17 @@ Default layout behavior:
 #### Commodity search
 
 - locked heading: commodity
-- filters: market, variety
+- filters: only available values from market, variety
 
 #### Market search
 
 - locked heading: market
-- filters: commodity, variety
+- filters: only available values from commodity, variety
 
 #### Variety search
 
 - locked headings: commodity and variety
-- filter: market
+- filter: only available values from market
 
 ### Filters
 
@@ -394,6 +449,17 @@ Current card layout details:
 - `Price Updates` shows `Latest` and `Previous` side by side
 - the results view header uses `Showing Results For` plus larger locked context chips
 
+For `necc_egg` rows, card rendering is source-aware:
+
+- there is no arrivals/units display when those values are null
+- blank variety/grade values are not shown
+- the primary displayed market rows currently expected are `Bengaluru` and `Mysuru`
+- price labels become:
+  - `Price (100 pieces)`
+  - `Price (1 piece)`
+  - `Price (1 tray)`
+- calculated prices are surfaced as float values
+
 The results UI also currently uses:
 
 - tighter mobile padding than the earlier prototype
@@ -420,7 +486,7 @@ Both date values use `DD-MM-YYYY`.
 
 Clicking `See Price History` expands an **inline history panel inside the card** for the exact:
 
-- `commodity + market + variety + grade`
+- `source_id + commodity + market + variety + grade`
 
 The history panel shows:
 
@@ -434,12 +500,17 @@ The history panel shows:
 - point markers for each plotted date
 - latest date active by default when the chart opens
 - hover/tap selection for any plotted date
-- an in-chart value tooltip plus a compact summary block for the selected date
+- a compact selected-date summary block below the graph
 - x-axis dates in `DD-MM`
-- tooltip and selected-date displays in `DD-MM-YYYY`
+- selected-date displays in `DD-MM-YYYY`
 - horizontal scrolling isolated to the graph area only
-- a `Last 7 days` / `Last 30 days` bubble aligned at the top-right of the expanded panel
 - a small note above the graph telling users to scroll horizontally to see all dates
+
+For `necc_egg` rows:
+
+- the chart shows a single canonical line only
+- the canonical line reflects the `100 pieces` price
+- there is no min/max/modal triple-series rendering for egg rows
 
 Current interaction details:
 
@@ -489,7 +560,7 @@ The local server currently exposes:
   returns district-level market mapping for the home-screen map
 
 - `/api/context`
-  returns table context metadata and all matching rows for the selected search type
+  returns table context metadata and all matching rows for the selected search type, including source-aware price fields
 
 - `/api/health`
   simple server + DB health check
@@ -509,7 +580,7 @@ Implemented and working:
 - route into shared results page
 - locked context headings
 - cascading filters
-- custom filter dropdown menus contained within the card on mobile
+- top-anchored popup-based custom filter dropdown menus on mobile and desktop
 - floating filter action button on the table screen
 - top-anchored popup-based multi-select filters with tap-to-expand dropdowns, removable chips, explicit apply, and clear actions
 - background scroll lock while the filter popup is open
@@ -519,7 +590,7 @@ Implemented and working:
 - card price deltas against the previous comparable update
 - inline card expansion
 - inline price history chart
-- selected-point chart tooltip and summary values
+- selected-point chart summary values
 - interactive district map on the home screen
 - district click-to-zoom using SVG `viewBox` focus
 - manual map panning inside the map container
@@ -550,14 +621,16 @@ Not implemented yet:
 
 - use SQLite as the active datastore
 - use the workbook as the rebuild source
+- use the local DB as the default scraper sink
 - use a repo-side JSON file as the source of truth for commodity categories
-- keep the current dataset static
+- keep the workbook snapshot as baseline seed data
 - build a local Node-served HTML dashboard
 - generate a GitHub Pages-friendly static build from the same source UI
 - make search the primary navigation path
 - add category-first browsing as a secondary home-screen discovery path
 - keep row history inline in the results cards
 - use the local district map as a secondary navigation path from home
+- make the scraper source-pluggable behind a single UI
 
 ### Not chosen
 
@@ -565,7 +638,7 @@ Not implemented yet:
 - write-through editing in the local app
 - direct Excel reads from the browser
 - giant JSON as the primary source of truth
-- latest-row-only results-card behavior for the current search-driven build
+- full historical row rendering as the primary results-card behavior
 
 ## Historical Context
 
@@ -580,11 +653,12 @@ That older workflow still exists in the codebase as reference, but it is **not t
 
 Reference-only files from that workflow:
 
-- `scrape_krama.js`
 - `scripts/backfill_perishability.js`
 - `appscript/Code.gs`
 - `appscript/CommodityMapping.html`
 - `appscript/Dashboard.html`
+
+`scrape_krama.js` is no longer reference-only. It has been repurposed into the active local scraper entry point and now supports multiple sources plus local DB writes.
 
 ## Operational Notes
 
@@ -593,6 +667,12 @@ Reference-only files from that workflow:
 
 - start the local dashboard server with:
   - `npm run dashboard:local`
+
+- launch the scraper UI locally with:
+  - double-click `Launch Commodity Scraper.vbs`
+
+- run the scraper from terminal if needed:
+  - `node scrape_krama.js`
 
 - build the static Pages bundle with:
   - `npm run build:pages`
@@ -608,6 +688,12 @@ Reference-only files from that workflow:
 
 - for latest-row-per-entry reads, prefer:
   - `latest_price_observations`
+
+- for duplicate handling:
+  - inspect `row_key` uniqueness in `price_observations`
+
+- for scraper execution auditing:
+  - inspect `scrape_runs`
 
 ## Current Map Notes
 
@@ -638,6 +724,135 @@ Current source limitation:
 - `Ramanagara` is present
 - `Vijayanagara` is not present in the current SVG source, even though it exists in the local DB
 
+## Current Scraper Scope
+
+The scraper is now structured for incremental multi-source expansion.
+
+Currently implemented sources:
+
+- `krama`
+- `necc_egg`
+- `csb_silk`
+- `rubber_board`
+- `spices_board`
+- `coffee_board`
+
+Current `necc_egg` scope:
+
+- scrapes the Daily Rate Sheet for the selected month and year
+- reads the selected report date from the displayed day columns
+- writes rows for Karnataka markets:
+  - `Bengaluru`
+  - `Mysuru`
+- stores:
+  - `price_100_pieces` from source data
+  - `price_1_piece` as derived float
+  - `price_1_tray` as derived float
+- stores `arrivals`, `unit`, `variety`, and `grade` as null when source data is not present
+
+Current `csb_silk` scope:
+
+- fetches the current official Central Silk Board prices page:
+  - `https://csb.gov.in/Statistics/silk-prices`
+- does not support historical selection or backfill from the scraper UI
+- uses a source-specific scraper UI flow with no date selector:
+  - the user just triggers `Fetch Today's Data`
+- scrapes the current HTML table directly from the page
+- writes one row per market entry under each silk goods group
+- stores:
+  - `commodity = Silk`
+  - `variety` from the source `Goods` label
+  - `market` from the source nested table row
+  - `report_date` from the row-level source `Date`
+  - `min_price` from `Min`
+  - `max_price` from `Max`
+  - `modal_price` from `Average`
+  - `arrivals` from `Quantity`
+- stores `grade` and `unit` as null / empty when source data is not present
+- stores missing `Quantity` as null, for example on `Raw Silk (Filature)`
+- classifies `Silk` as:
+  - `perishability = non-perishable`
+  - `category = miscellaneous`
+- market names are normalized to uppercase before DB writes
+- currently normalizes the obvious market-name variant before uppercasing:
+  - `Ramanagaram` -> `RAMANAGARA`
+
+Current `rubber_board` scope:
+
+- posts the selected date directly to the official Rubber Board daily market price form:
+  - `https://rubberboard.gov.in/indianPrices`
+- supports a single-date fetch from the scraper UI
+- internally submits the selected date as both:
+  - `txtFromDate`
+  - `txtToDate`
+- loops through official grade ids for:
+  - `RSS4`
+  - `RSS5`
+  - `ISNR20`
+  - `Latex (60%)`
+- writes rows only for target markets:
+  - `KOTTAYAM`
+  - `KOCHI`
+- stores:
+  - `commodity = Rubber`
+  - `variety` from the selected official grade
+  - `report_date` from the row-level source date
+  - `modal_price` from the INR price per 100 kg
+- stores `arrivals`, `unit`, `grade`, `min_price`, and `max_price` as null / empty because the source does not provide them in this flow
+- classifies `Rubber` as:
+  - `perishability = non-perishable`
+  - `category = miscellaneous`
+
+Current `spices_board` scope:
+
+- fetches the selected date directly from the official Spices Board current market price page:
+  - `https://www.indianspices.com/marketing/price/domestic/current-market-price.html`
+- supports a single-date fetch from the scraper UI
+- internally sends the selected date as both:
+  - `dateFrom`
+  - `dateTo`
+- always fixes the official state filter to:
+  - `KERALA`
+- parses only rows for the target market:
+  - `Cochin`
+- writes one row per displayed spice-grade row for that date
+- stores:
+  - `commodity` from the source `Spice` column
+  - `market = Cochin`
+  - `report_date` from the row-level source date
+  - `grade` from the source `Grade` column
+  - `modal_price` from the source `Avg` column
+- stores `variety`, `arrivals`, `unit`, `min_price`, and `max_price` as null / empty because they are not used in this source flow
+- stores source grade `-` as blank
+- classifies all inserted rows as:
+  - `perishability = non-perishable`
+  - `category = miscellaneous`
+
+Current `coffee_board` scope:
+
+- downloads the dated daily report PDF from the official Coffee Board archive flow:
+  - `https://coffeeboard.gov.in/Market_Info_Archives.aspx`
+- supports a single-date fetch from the scraper UI
+- resolves the selected date through the official archive month page and date link before downloading the PDF
+- parses only the source section:
+  - `Raw Coffee Price (Karnataka)`
+- writes four rows per day for the fixed raw-coffee varieties:
+  - `Arabica Parchment`
+  - `Arabica Cherry`
+  - `Robusta Parchment`
+  - `Robusta Cherry`
+- stores:
+  - `commodity = Coffee`
+  - `market = Karnataka`
+  - `variety` from the source raw coffee type label
+  - `report_date` from the PDF section date
+  - `min_price` and `max_price` from the source range values
+  - `unit = 50 Kg`
+- stores `grade`, `arrivals`, and `modal_price` as null / empty because they are not present in this source section
+- classifies all inserted rows as:
+  - `perishability = non-perishable`
+  - `category = miscellaneous`
+
 ## Immediate Next Step
 
-The next practical work is to continue refining the local dashboard UI, validate the new home category browser against more mobile usage feedback, and expand any remaining localization coverage beyond commodity, market, variety, and category labels if needed.
+The next practical work is to continue refining the local dashboard UI, validate the multi-source scraper UX with editorial users, and add additional scraper sources behind the same source-selection screen as needed.
