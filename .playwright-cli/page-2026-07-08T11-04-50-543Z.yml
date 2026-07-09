@@ -1,0 +1,136 @@
+- generic [active]:
+  - generic:
+    - generic:
+      - generic [ref=e1]:
+        - link "Coffee Board of India" [ref=e3] [cursor=pointer]:
+          - /url: index.aspx
+          - img "Coffee Board of India" [ref=e4]
+        - generic [ref=e5]:
+          - list [ref=e6]:
+            - listitem [ref=e7]:
+              - link "Twitter" [ref=e8] [cursor=pointer]:
+                - /url: https://twitter.com/coffeeboardI/
+                - img "Twitter" [ref=e9]
+            - listitem [ref=e10]:
+              - link "Facebook" [ref=e11] [cursor=pointer]:
+                - /url: https://www.facebook.com/Coffee-Board-690587207786527
+                - img "Facebook" [ref=e12]
+            - listitem [ref=e13]:
+              - link "Instagram" [ref=e14] [cursor=pointer]:
+                - /url: https://www.instagram.com/coffeeboardofindia
+                - img "Instagram" [ref=e15]
+            - listitem [ref=e16]:
+              - link "Google Plus" [ref=e17] [cursor=pointer]:
+                - /url: "#"
+                - img "Google Plus" [ref=e18]
+            - listitem [ref=e19]:
+              - link "YouTube" [ref=e20] [cursor=pointer]:
+                - /url: "#"
+                - img "YouTube" [ref=e21]
+            - listitem [ref=e22]:
+              - link "IBEF" [ref=e23] [cursor=pointer]:
+                - /url: https://www.teacoffeespiceofindia.com/
+                - img "IBEF" [ref=e24]
+          - list [ref=e25]:
+            - listitem [ref=e26]:
+              - link "Home" [ref=e27] [cursor=pointer]:
+                - /url: index.aspx
+            - listitem [ref=e28]:
+              - link "About Us" [ref=e29] [cursor=pointer]:
+                - /url: aboutus.aspx
+            - listitem [ref=e30]:
+              - link "Contact" [ref=e31] [cursor=pointer]:
+                - /url: contact-us.html
+            - listitem [ref=e32]:
+              - link "हिन्दी" [ref=e33] [cursor=pointer]:
+                - /url: Market_Info_hindi.aspx
+      - generic [ref=e34]:
+        - generic [ref=e35]:
+          - textbox [ref=e36]: Search keyword
+          - link "Search" [ref=e37] [cursor=pointer]:
+            - /url: "#"
+            - img "Search" [ref=e38]
+        - list [ref=e39]:
+          - navigation:
+            - listitem [ref=e40]:
+              - generic "Industry" [ref=e41]: Exports
+            - listitem [ref=e42]:
+              - link "Services" [ref=e43] [cursor=pointer]:
+                - /url: "#"
+            - listitem [ref=e44]:
+              - link "News" [ref=e45] [cursor=pointer]:
+                - /url: News.aspx
+            - listitem [ref=e46]:
+              - link "Tenders" [ref=e47] [cursor=pointer]:
+                - /url: Tenders.aspx
+            - listitem [ref=e48]:
+              - link "Advisories" [ref=e49] [cursor=pointer]:
+                - /url: Advisories.aspx
+            - listitem [ref=e50]:
+              - link "Trade Enquiry" [ref=e51] [cursor=pointer]:
+                - /url: Tradeenquiry.aspx
+            - listitem [ref=e52]:
+              - generic "Statistics" [ref=e53]
+            - listitem [ref=e54]:
+              - generic "schemes" [ref=e55]: Schemes
+            - listitem [ref=e56]:
+              - generic "Media & Events" [ref=e57]
+            - listitem [ref=e58]:
+              - generic "publications" [ref=e59]: Publications
+        - navigation
+      - generic [ref=e62]:
+        - heading "STATISTICS" [level=2] [ref=e63]
+        - paragraph
+      - generic [ref=e64]:
+        - paragraph
+      - generic [ref=e65]:
+        - generic [ref=e67]:
+          - heading "STATISTICS" [level=3] [ref=e68]
+          - list [ref=e69]:
+            - listitem [ref=e70]:
+              - link "Market Info" [ref=e71] [cursor=pointer]:
+                - /url: Market_Info.aspx
+            - listitem [ref=e72]:
+              - link "Export Info" [ref=e73] [cursor=pointer]:
+                - /url: ExportInfo.aspx
+            - listitem [ref=e74]:
+              - link "Database on Coffee" [ref=e75] [cursor=pointer]:
+                - /url: database-coffee.html
+            - listitem [ref=e76]:
+              - link "Coffee Statistics" [ref=e77] [cursor=pointer]:
+                - /url: coffee-statistics.html
+        - generic [ref=e78]:
+          - heading "Market Info" [level=1] [ref=e79]
+          - paragraph [ref=e80]:
+            - strong [ref=e81]: Daily Coffee Market Report
+          - paragraph [ref=e82]: Wednesday July 08, 2026
+          - paragraph [ref=e83]:
+            - link "PDF" [ref=e84] [cursor=pointer]:
+              - /url: javascript:__doPostBack('lbnmarketinfo','')
+            - img [ref=e85]
+          - paragraph [ref=e86]:
+            - link "Archives" [ref=e88] [cursor=pointer]:
+              - /url: javascript:__doPostBack('lbnarchives','')
+          - button "Click here to view Daily report" [ref=e89]
+      - generic [ref=e90]:
+        - generic [ref=e91]:
+          - list:
+            - listitem [ref=e92]:
+              - link "Home" [ref=e93] [cursor=pointer]:
+                - /url: index.aspx
+            - listitem [ref=e94]:
+              - link "Privacy Policy" [ref=e95] [cursor=pointer]:
+                - /url: privacy.html
+            - listitem [ref=e96]:
+              - link "Disclaimer" [ref=e97] [cursor=pointer]:
+                - /url: Disclaimer.html
+            - listitem [ref=e98]:
+              - link "Sitemap" [ref=e99] [cursor=pointer]:
+                - /url: SiteMap.html
+            - listitem [ref=e100]:
+              - link "Contact Us" [ref=e101] [cursor=pointer]:
+                - /url: contact-us.html
+            - listitem [ref=e102]:
+              - link "Feedback" [ref=e103] [cursor=pointer]:
+                - /url: feedback.aspx
+        - paragraph [ref=e104]: Copyright © 2014. All Rights Reserved by Coffee Board of India

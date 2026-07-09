@@ -1,0 +1,240 @@
+- generic [ref=f4e3]:
+  - generic [ref=f4e4]:
+    - link "Coffee Board of India" [ref=f4e6] [cursor=pointer]:
+      - /url: index.aspx
+      - img "Coffee Board of India" [ref=f4e7]
+    - generic [ref=f4e8]:
+      - list [ref=f4e9]:
+        - link "Skip to main content" [ref=f4e10] [cursor=pointer]:
+          - /url: "#main"
+        - link [ref=f4e11] [cursor=pointer]:
+          - /url: javascript:decreaseFontSize();
+          - img [ref=f4e12]
+        - link [ref=f4e13] [cursor=pointer]:
+          - /url: javascript:resetFontSize();
+          - img [ref=f4e14]
+        - link [ref=f4e15] [cursor=pointer]:
+          - /url: javascript:increaseFontSize();
+          - img [ref=f4e16]
+        - button [ref=f4e17]
+        - button [ref=f4e18]
+        - button [ref=f4e19]
+        - navigation
+      - list [ref=f4e20]:
+        - listitem [ref=f4e21]:
+          - link "Twitter" [ref=f4e22] [cursor=pointer]:
+            - /url: javascript:AlertIt6('https://twitter.com/coffeeboardI/');
+            - img "Twitter" [ref=f4e23]
+        - listitem [ref=f4e24]:
+          - link "Facebook" [ref=f4e25] [cursor=pointer]:
+            - /url: javascript:AlertIt7('https://www.facebook.com/Coffee-Board-690587207786527');
+            - img "Facebook" [ref=f4e26]
+        - listitem [ref=f4e27]:
+          - link "Instagram" [ref=f4e28] [cursor=pointer]:
+            - /url: javascript:AlertIt8('https://www.instagram.com/coffeeboardofindia')
+            - img "Instagram" [ref=f4e29]
+        - listitem [ref=f4e30]:
+          - link "Google Plus" [ref=f4e31] [cursor=pointer]:
+            - /url: "#"
+            - img "Google Plus" [ref=f4e32]
+        - listitem [ref=f4e33]:
+          - link "YouTube" [ref=f4e34] [cursor=pointer]:
+            - /url: "#"
+            - img "YouTube" [ref=f4e35]
+        - listitem [ref=f4e36]:
+          - link "IBEF" [ref=f4e37] [cursor=pointer]:
+            - /url: javascript:AlertIt9('https://www.teacoffeespiceofindia.com/');
+            - img "IBEF" [ref=f4e38]
+      - list [ref=f4e39]:
+        - listitem [ref=f4e40]:
+          - link "Home" [ref=f4e41] [cursor=pointer]:
+            - /url: index.aspx
+        - listitem [ref=f4e42]:
+          - link "About Us" [ref=f4e43] [cursor=pointer]:
+            - /url: aboutus.aspx
+        - listitem [ref=f4e44]:
+          - link "Contact" [ref=f4e45] [cursor=pointer]:
+            - /url: contact-us.html
+        - listitem [ref=f4e46]:
+          - link "हिन्दी" [ref=f4e47] [cursor=pointer]:
+            - /url: Archives_Month_hindi.aspx
+  - generic [ref=f4e48]:
+    - textbox "search" [ref=f4e54]
+    - list [ref=f4e55]:
+      - navigation:
+        - listitem [ref=f4e56]:
+          - generic "Industry" [ref=f4e57]: Exports
+        - listitem [ref=f4e58]:
+          - generic "services" [ref=f4e59]: Services
+        - listitem [ref=f4e60]:
+          - link "News" [ref=f4e61] [cursor=pointer]:
+            - /url: News.aspx
+        - listitem [ref=f4e62]:
+          - link "Tenders" [ref=f4e63] [cursor=pointer]:
+            - /url: Tenders.aspx
+        - listitem [ref=f4e64]:
+          - link "Advisories" [ref=f4e65] [cursor=pointer]:
+            - /url: Advisories.aspx
+        - listitem [ref=f4e66]:
+          - link "Trade Enquiry" [ref=f4e67] [cursor=pointer]:
+            - /url: Tradeenquiry.aspx
+        - listitem [ref=f4e68]:
+          - generic "Statistics" [ref=f4e69]
+        - listitem [ref=f4e70]:
+          - generic "schemes" [ref=f4e71]: Schemes
+        - listitem [ref=f4e72]:
+          - link "Media & Events" [ref=f4e73] [cursor=pointer]:
+            - /url: "#"
+        - listitem [ref=f4e74]:
+          - generic "publications" [ref=f4e75]: Publications
+    - navigation
+  - list [ref=f4e76]:
+    - listitem [ref=f4e77]:
+      - link "Home" [ref=f4e78] [cursor=pointer]:
+        - /url: index.aspx
+    - listitem [ref=f4e79]:
+      - text: ">>"
+      - link "Statistics" [ref=f4e80] [cursor=pointer]:
+        - /url: "#"
+    - listitem [ref=f4e81]:
+      - text: ">>"
+      - link "Market Info" [ref=f4e82] [cursor=pointer]:
+        - /url: Market_Info.aspx
+    - listitem [ref=f4e83]:
+      - text: ">>"
+      - link "MarketInfo Information" [ref=f4e84] [cursor=pointer]:
+        - /url: Market_Info_Archives.aspx
+    - listitem [ref=f4e85]:
+      - text: ">>"
+      - link "Market Information Month Wise" [ref=f4e86] [cursor=pointer]:
+        - /url: Archives_Month.aspx
+  - generic [ref=f4e89]:
+    - heading "STATISTICS" [level=2] [ref=f4e90]
+    - paragraph
+  - generic [ref=f4e91]:
+    - paragraph
+  - generic [ref=f4e92]:
+    - generic [ref=f4e94]:
+      - heading "STATISTICS" [level=3] [ref=f4e95]
+      - list [ref=f4e96]:
+        - listitem [ref=f4e97]:
+          - link "Market Info" [ref=f4e98] [cursor=pointer]:
+            - /url: Market_Info.aspx
+        - listitem [ref=f4e99]:
+          - link "Export Info" [ref=f4e100] [cursor=pointer]:
+            - /url: ExportInfo.aspx
+        - listitem [ref=f4e101]:
+          - link "Database on Coffee" [ref=f4e102] [cursor=pointer]:
+            - /url: database-coffee.html
+        - listitem [ref=f4e103]:
+          - link "Coffee Statistics" [ref=f4e104] [cursor=pointer]:
+            - /url: coffee-statistics.html
+    - main [ref=f4e106]:
+      - heading "Market Information" [level=1] [ref=f4e107]
+      - generic [ref=f4e108]:
+        - paragraph [ref=f4e109]
+        - paragraph
+        - table [ref=f4e110]:
+          - rowgroup [ref=f4e111]:
+            - row "2024,Jul,01 2024,Jul,02 2024,Jul,03 2024,Jul,04 2024,Jul,05 2024,Jul,08 2024,Jul,09 2024,Jul,10 2024,Jul,11 2024,Jul,12 2024,Jul,16 2024,Jul,18 2024,Jul,19 2024,Jul,22 2024,Jul,23 2024,Jul,24 2024,Jul,25 2024,Jul,26 2024,Jul,31" [ref=f4e112]:
+              - cell "2024,Jul,01 2024,Jul,02 2024,Jul,03 2024,Jul,04 2024,Jul,05 2024,Jul,08 2024,Jul,09 2024,Jul,10 2024,Jul,11 2024,Jul,12 2024,Jul,16 2024,Jul,18 2024,Jul,19 2024,Jul,22 2024,Jul,23 2024,Jul,24 2024,Jul,25 2024,Jul,26 2024,Jul,31" [ref=f4e113]:
+                - table [ref=f4e114]:
+                  - rowgroup [ref=f4e115]:
+                    - row "2024,Jul,01 2024,Jul,02 2024,Jul,03" [ref=f4e116]:
+                      - cell "2024,Jul,01" [ref=f4e117]:
+                        - link "2024,Jul,01" [ref=f4e118] [cursor=pointer]:
+                          - /url: javascript:__doPostBack('DataList1$ctl00$LinkButton1','')
+                      - cell "2024,Jul,02" [ref=f4e119]:
+                        - link "2024,Jul,02" [ref=f4e120] [cursor=pointer]:
+                          - /url: javascript:__doPostBack('DataList1$ctl01$LinkButton1','')
+                      - cell "2024,Jul,03" [ref=f4e121]:
+                        - link "2024,Jul,03" [ref=f4e122] [cursor=pointer]:
+                          - /url: javascript:__doPostBack('DataList1$ctl02$LinkButton1','')
+                    - row "2024,Jul,04 2024,Jul,05 2024,Jul,08" [ref=f4e123]:
+                      - cell "2024,Jul,04" [ref=f4e124]:
+                        - link "2024,Jul,04" [ref=f4e125] [cursor=pointer]:
+                          - /url: javascript:__doPostBack('DataList1$ctl03$LinkButton1','')
+                      - cell "2024,Jul,05" [ref=f4e126]:
+                        - link "2024,Jul,05" [ref=f4e127] [cursor=pointer]:
+                          - /url: javascript:__doPostBack('DataList1$ctl04$LinkButton1','')
+                      - cell "2024,Jul,08" [ref=f4e128]:
+                        - link "2024,Jul,08" [ref=f4e129] [cursor=pointer]:
+                          - /url: javascript:__doPostBack('DataList1$ctl05$LinkButton1','')
+                    - row "2024,Jul,09 2024,Jul,10 2024,Jul,11" [ref=f4e130]:
+                      - cell "2024,Jul,09" [ref=f4e131]:
+                        - link "2024,Jul,09" [ref=f4e132] [cursor=pointer]:
+                          - /url: javascript:__doPostBack('DataList1$ctl06$LinkButton1','')
+                      - cell "2024,Jul,10" [ref=f4e133]:
+                        - link "2024,Jul,10" [ref=f4e134] [cursor=pointer]:
+                          - /url: javascript:__doPostBack('DataList1$ctl07$LinkButton1','')
+                      - cell "2024,Jul,11" [ref=f4e135]:
+                        - link "2024,Jul,11" [ref=f4e136] [cursor=pointer]:
+                          - /url: javascript:__doPostBack('DataList1$ctl08$LinkButton1','')
+                    - row "2024,Jul,12 2024,Jul,16 2024,Jul,18" [ref=f4e137]:
+                      - cell "2024,Jul,12" [ref=f4e138]:
+                        - link "2024,Jul,12" [ref=f4e139] [cursor=pointer]:
+                          - /url: javascript:__doPostBack('DataList1$ctl09$LinkButton1','')
+                      - cell "2024,Jul,16" [ref=f4e140]:
+                        - link "2024,Jul,16" [ref=f4e141] [cursor=pointer]:
+                          - /url: javascript:__doPostBack('DataList1$ctl10$LinkButton1','')
+                      - cell "2024,Jul,18" [ref=f4e142]:
+                        - link "2024,Jul,18" [ref=f4e143] [cursor=pointer]:
+                          - /url: javascript:__doPostBack('DataList1$ctl11$LinkButton1','')
+                    - row "2024,Jul,19 2024,Jul,22 2024,Jul,23" [ref=f4e144]:
+                      - cell "2024,Jul,19" [ref=f4e145]:
+                        - link "2024,Jul,19" [ref=f4e146] [cursor=pointer]:
+                          - /url: javascript:__doPostBack('DataList1$ctl12$LinkButton1','')
+                      - cell "2024,Jul,22" [ref=f4e147]:
+                        - link "2024,Jul,22" [ref=f4e148] [cursor=pointer]:
+                          - /url: javascript:__doPostBack('DataList1$ctl13$LinkButton1','')
+                      - cell "2024,Jul,23" [ref=f4e149]:
+                        - link "2024,Jul,23" [ref=f4e150] [cursor=pointer]:
+                          - /url: javascript:__doPostBack('DataList1$ctl14$LinkButton1','')
+                    - row "2024,Jul,24 2024,Jul,25 2024,Jul,26" [ref=f4e151]:
+                      - cell "2024,Jul,24" [ref=f4e152]:
+                        - link "2024,Jul,24" [ref=f4e153] [cursor=pointer]:
+                          - /url: javascript:__doPostBack('DataList1$ctl15$LinkButton1','')
+                      - cell "2024,Jul,25" [ref=f4e154]:
+                        - link "2024,Jul,25" [ref=f4e155] [cursor=pointer]:
+                          - /url: javascript:__doPostBack('DataList1$ctl16$LinkButton1','')
+                      - cell "2024,Jul,26" [ref=f4e156]:
+                        - link "2024,Jul,26" [ref=f4e157] [cursor=pointer]:
+                          - /url: javascript:__doPostBack('DataList1$ctl17$LinkButton1','')
+                    - row "2024,Jul,31" [ref=f4e158]:
+                      - cell "2024,Jul,31" [ref=f4e159]:
+                        - link "2024,Jul,31" [ref=f4e160] [cursor=pointer]:
+                          - /url: javascript:__doPostBack('DataList1$ctl18$LinkButton1','')
+                      - cell [ref=f4e161]
+                      - cell [ref=f4e162]
+        - paragraph
+        - paragraph [ref=f4e163]
+        - table [ref=f4e164]:
+          - rowgroup [ref=f4e165]:
+            - row [ref=f4e166]:
+              - cell [ref=f4e167]
+        - paragraph
+    - generic [ref=f4e168]:
+      - generic [ref=f4e169]:
+        - list:
+          - listitem [ref=f4e170]:
+            - link "Home" [ref=f4e171] [cursor=pointer]:
+              - /url: index.aspx
+          - listitem [ref=f4e172]:
+            - link "Privacy Policy" [ref=f4e173] [cursor=pointer]:
+              - /url: privacy.html
+          - listitem [ref=f4e174]:
+            - link "Disclaimer" [ref=f4e175] [cursor=pointer]:
+              - /url: Disclaimer.html
+          - listitem [ref=f4e176]:
+            - link "Sitemap" [ref=f4e177] [cursor=pointer]:
+              - /url: SiteMap.html
+          - listitem [ref=f4e178]:
+            - link "Contact Us" [ref=f4e179] [cursor=pointer]:
+              - /url: contact-us.html
+          - listitem [ref=f4e180]:
+            - link "Screen Reader Access" [ref=f4e181] [cursor=pointer]:
+              - /url: Screenreader.html
+          - listitem [ref=f4e182]:
+            - link "Feedback" [ref=f4e183] [cursor=pointer]:
+              - /url: feedback.aspx
+      - paragraph [ref=f4e184]: Copyright © 2014. All Rights Reserved by Coffee Board of India

@@ -1,0 +1,696 @@
+- generic [active] [ref=f3e1]:
+  - generic:
+    - link "Accessibility Menu Close" [ref=f3e2] [cursor=pointer]:
+      - /url: javascript:void(0)
+      - text: Accessibility Menu
+      - paragraph
+      - button "Close" [ref=f3e3]
+    - table [ref=f3e4]:
+      - rowgroup [ref=f3e5]:
+        - row "Keyboard Nav Cursor" [ref=f3e6]:
+          - cell "Keyboard Nav" [ref=f3e7]:
+            - list [ref=f3e8]:
+              - listitem [ref=f3e9] [cursor=pointer]:
+                - img [ref=f3e10]
+                - text: Keyboard Nav
+          - cell "Cursor" [ref=f3e11]:
+            - list [ref=f3e12]:
+              - listitem [ref=f3e13] [cursor=pointer]:
+                - img [ref=f3e14]
+                - text: Cursor
+        - row "Contrast + Bigger Text" [ref=f3e15]:
+          - cell "Contrast +" [ref=f3e16]:
+            - list [ref=f3e17]:
+              - listitem [ref=f3e18] [cursor=pointer]:
+                - img [ref=f3e19]
+                - text: Contrast +
+          - cell "Bigger Text" [ref=f3e20]:
+            - list [ref=f3e21]:
+              - listitem [ref=f3e22] [cursor=pointer]:
+                - img [ref=f3e23]
+                - text: Bigger Text
+        - row "Desaturate Highlight Links" [ref=f3e24]:
+          - cell "Desaturate" [ref=f3e25]:
+            - list [ref=f3e26]:
+              - listitem [ref=f3e27] [cursor=pointer]:
+                - img [ref=f3e28]
+                - text: Desaturate
+          - cell "Highlight Links" [ref=f3e29]:
+            - list [ref=f3e30]:
+              - listitem [ref=f3e31] [cursor=pointer]:
+                - img [ref=f3e32]
+                - text: Highlight Links
+        - row "Legible Fonts Read Page" [ref=f3e33]:
+          - cell "Legible Fonts" [ref=f3e34]:
+            - list [ref=f3e35]:
+              - listitem [ref=f3e36] [cursor=pointer]:
+                - img [ref=f3e37]
+                - text: Legible Fonts
+          - cell "Read Page" [ref=f3e38]:
+            - list [ref=f3e39]:
+              - listitem [ref=f3e40] [cursor=pointer]:
+                - link "Read Page" [ref=f3e41]:
+                  - /url: "#"
+                  - img [ref=f3e42]
+                  - text: Read Page
+  - navigation [ref=f3e44]:
+    - list [ref=f3e46]:
+      - listitem [ref=f3e47]: "Welcome to Rubber Board : +914812301231"
+      - listitem [ref=f3e48]: Accessibility
+      - listitem [ref=f3e49]:
+        - link "Hindi" [ref=f3e50] [cursor=pointer]:
+          - /url: public?lang=H
+      - listitem [ref=f3e51]:
+        - link "Malayalam" [ref=f3e52] [cursor=pointer]:
+          - /url: public?lang=M
+      - listitem [ref=f3e53]:
+        - link "Skip to Main Content/Navigation" [ref=f3e54] [cursor=pointer]:
+          - /url: "#tabinfo"
+      - listitem [ref=f3e55] [cursor=pointer]:
+        - link "A-" [ref=f3e56]:
+          - /url: javascript:void(0)
+      - listitem [ref=f3e57] [cursor=pointer]:
+        - link "A" [ref=f3e58]:
+          - /url: javascript:void(0)
+      - listitem [ref=f3e59] [cursor=pointer]:
+        - link "A+" [ref=f3e60]:
+          - /url: javascript:void(0)
+      - listitem [ref=f3e61]
+    - generic [ref=f3e62]:
+      - list [ref=f3e64]:
+        - listitem [ref=f3e65]:
+          - link "Rubber Board Ministry of Commerce & Industry" [ref=f3e66] [cursor=pointer]:
+            - /url: public?lang=E
+            - img "Rubber Board Ministry of Commerce & Industry" [ref=f3e67]
+        - listitem [ref=f3e68]:
+          - link "Rubber Board Ministry of Commerce & Industry" [ref=f3e69] [cursor=pointer]:
+            - /url: public?lang=E
+            - img "Rubber Board Ministry of Commerce & Industry" [ref=f3e70]
+        - listitem [ref=f3e71]:
+          - link "Rubber Board Ministry of Commerce & Industry" [ref=f3e72] [cursor=pointer]:
+            - /url: public?lang=E
+            - img "Rubber Board Ministry of Commerce & Industry" [ref=f3e73]
+        - listitem [ref=f3e74]
+      - generic [ref=f3e75]:
+        - list [ref=f3e76]:
+          - listitem [ref=f3e77]:
+            - link "Home" [ref=f3e78] [cursor=pointer]:
+              - /url: public?lang=E
+          - listitem [ref=f3e79]:
+            - link "Location Map" [ref=f3e80] [cursor=pointer]:
+              - /url: locationmap?lang=E
+          - listitem [ref=f3e81]:
+            - link "Contact Address" [ref=f3e82] [cursor=pointer]:
+              - /url: contactus?lang=E
+          - listitem [ref=f3e83]:
+            - link "Help" [ref=f3e84] [cursor=pointer]:
+              - /url: help?lang=E
+        - generic [ref=f3e86]:
+          - textbox "Search for..." [ref=f3e87]
+          - button "search" [ref=f3e89] [cursor=pointer]:
+            - img "search" [ref=f3e90]
+    - list [ref=f3e93]:
+      - listitem [ref=f3e94]:
+        - link "About" [ref=f3e95] [cursor=pointer]:
+          - /url: javascript:void(0)
+        - list
+      - listitem [ref=f3e96]:
+        - link "Rubber" [ref=f3e97] [cursor=pointer]:
+          - /url: javascript:void(0)
+        - list
+      - listitem [ref=f3e98]:
+        - link "Schemes" [ref=f3e99] [cursor=pointer]:
+          - /url: javascript:void(0)
+        - list
+      - listitem [ref=f3e100]:
+        - link "Marketing & Export" [ref=f3e101] [cursor=pointer]:
+          - /url: javascript:void(0)
+        - list
+      - listitem [ref=f3e102]:
+        - link "Services" [ref=f3e103] [cursor=pointer]:
+          - /url: javascript:void(0)
+        - list
+      - listitem [ref=f3e104]:
+        - link "E-Services" [ref=f3e105] [cursor=pointer]:
+          - /url: javascript:void(0)
+        - list
+      - listitem [ref=f3e106]:
+        - link "Statistics" [ref=f3e107] [cursor=pointer]:
+          - /url: javascript:void(0)
+        - list
+  - generic [ref=f3e108]:
+    - generic [ref=f3e112]:
+      - list:
+        - listitem [ref=f3e113] [cursor=pointer]
+        - listitem [ref=f3e114] [cursor=pointer]
+        - listitem [ref=f3e115] [cursor=pointer]
+      - img "PM Banner" [ref=f3e118] [cursor=pointer]
+      - link "" [ref=f3e119] [cursor=pointer]:
+        - /url: "#carousel-example-generic"
+        - generic [ref=f3e120]: 
+      - link "" [ref=f3e121] [cursor=pointer]:
+        - /url: "#carousel-example-generic"
+        - generic [ref=f3e122]: 
+    - generic [ref=f3e123]:
+      - heading "News Feed" [level=4] [ref=f3e124]
+      - list [ref=f3e128]:
+        - listitem [ref=f3e129]:
+          - link "thumbnail Contact Rubber Board Call.. gifimage" [ref=f3e130] [cursor=pointer]:
+            - /url: javascript:void(0)
+            - img "thumbnail" [ref=f3e131]
+            - text: Contact Rubber Board Call..
+            - img "gifimage" [ref=f3e132]
+        - listitem [ref=f3e133]:
+          - link "thumbnail Rubber Board to conduct c.. gifimage" [ref=f3e134] [cursor=pointer]:
+            - /url: javascript:void(0)
+            - img "thumbnail" [ref=f3e135]
+            - text: Rubber Board to conduct c..
+            - img "gifimage" [ref=f3e136]
+        - listitem [ref=f3e137]:
+          - link "thumbnail Rubber Board engages Juni.. gifimage" [ref=f3e138] [cursor=pointer]:
+            - /url: javascript:void(0)
+            - img "thumbnail" [ref=f3e139]
+            - text: Rubber Board engages Juni..
+            - img "gifimage" [ref=f3e140]
+        - listitem [ref=f3e141]:
+          - link "thumbnail Rubber Tappers’ Insurance.. gifimage" [ref=f3e142] [cursor=pointer]:
+            - /url: javascript:void(0)
+            - img "thumbnail" [ref=f3e143]
+            - text: Rubber Tappers’ Insurance..
+            - img "gifimage" [ref=f3e144]
+        - listitem [ref=f3e145]:
+          - link "thumbnail N. Hari appointed as Rubb.. gifimage" [ref=f3e146] [cursor=pointer]:
+            - /url: javascript:void(0)
+            - img "thumbnail" [ref=f3e147]
+            - text: N. Hari appointed as Rubb..
+            - img "gifimage" [ref=f3e148]
+        - listitem [ref=f3e149]:
+          - link "thumbnail Contact Call Centre to kn.. gifimage" [ref=f3e150] [cursor=pointer]:
+            - /url: javascript:void(0)
+            - img "thumbnail" [ref=f3e151]
+            - text: Contact Call Centre to kn..
+            - img "gifimage" [ref=f3e152]
+        - listitem [ref=f3e153]:
+          - link "thumbnail Contact Call Centre to kn.. gifimage" [ref=f3e154] [cursor=pointer]:
+            - /url: javascript:void(0)
+            - img "thumbnail" [ref=f3e155]
+            - text: Contact Call Centre to kn..
+            - img "gifimage" [ref=f3e156]
+        - listitem [ref=f3e157]:
+          - link "thumbnail Applications for financia.. gifimage" [ref=f3e158] [cursor=pointer]:
+            - /url: javascript:void(0)
+            - img "thumbnail" [ref=f3e159]
+            - text: Applications for financia..
+            - img "gifimage" [ref=f3e160]
+        - listitem [ref=f3e161]:
+          - link "thumbnail Rubber Board proposes to .. gifimage" [ref=f3e162] [cursor=pointer]:
+            - /url: javascript:void(0)
+            - img "thumbnail" [ref=f3e163]
+            - text: Rubber Board proposes to ..
+            - img "gifimage" [ref=f3e164]
+        - listitem [ref=f3e165]:
+          - link "thumbnail Rubber Board Recruitment:.. gifimage" [ref=f3e166] [cursor=pointer]:
+            - /url: javascript:void(0)
+            - img "thumbnail" [ref=f3e167]
+            - text: Rubber Board Recruitment:..
+            - img "gifimage" [ref=f3e168]
+    - generic [ref=f3e169]:
+      - link "RSS FEED" [ref=f3e171] [cursor=pointer]:
+        - /url: rssfeed/pricelist.xml
+        - img "RSS FEED" [ref=f3e172]
+      - link "Instagram" [ref=f3e174] [cursor=pointer]:
+        - /url: https://www.instagram.com/therubberboard/
+        - img "Instagram" [ref=f3e175]
+      - link "India Rubber Meet" [ref=f3e177] [cursor=pointer]:
+        - /url: https://indiarubbermeet.in
+        - img "India Rubber Meet" [ref=f3e178]
+      - link "Youtube" [ref=f3e180] [cursor=pointer]:
+        - /url: https://www.youtube.com/channel/UCwM2p7jyVvDKQ0A_QKOOUQA/featured
+        - img "Youtube" [ref=f3e181]
+      - link "Twitter" [ref=f3e183] [cursor=pointer]:
+        - /url: https://twitter.com/rubberboard?lang=en
+        - img "Twitter" [ref=f3e184]
+      - link "FaceBook" [ref=f3e186] [cursor=pointer]:
+        - /url: https://www.facebook.com/rubberboard
+        - img "FaceBook" [ref=f3e187]
+    - list [ref=f3e190]:
+      - listitem [ref=f3e191]:
+        - img "updates" [ref=f3e192]
+      - listitem [ref=f3e193]:
+        - generic [ref=f3e195]: "N. Hari appointed as Rubber Board Chairman | Contact Call Centre to know about labour welfare schemes of the Rubber Board | Contact Call Centre to know about Rubber Production Incentive Scheme | Applications for financial assistance from Rubber Board- date extended | Rubber Board proposes to engage Engineering Supervisor (Civil) | Rubber Board Recruitment: Application Deadline Extended | Rubber Board launches 6th edition of Virtual Trade Fair (VTF) | Rubber Board to engage Senior Research Fellow | National Library Week Celebration at Rubber Board concludes | Training in rubber sheet processing and grading |"
+  - generic [ref=f3e196]:
+    - generic [ref=f3e197]:
+      - list [ref=f3e199]:
+        - listitem [ref=f3e200]:
+          - link "Messages" [ref=f3e201] [cursor=pointer]:
+            - /url: "#tab_1"
+        - listitem [ref=f3e202]:
+          - link "Rubber Research" [ref=f3e203] [cursor=pointer]:
+            - /url: "#tab_2"
+        - listitem [ref=f3e204]:
+          - link "Rubber Training" [ref=f3e205] [cursor=pointer]:
+            - /url: https://training.rubberboard.org.in
+        - listitem [ref=f3e206]:
+          - link "Marketing Services" [ref=f3e207] [cursor=pointer]:
+            - /url: articleview?item_id=223320230509
+      - generic [ref=f3e210]:
+        - generic [ref=f3e211]:
+          - generic [ref=f3e212]: Chairman
+          - paragraph
+          - paragraph [ref=f3e213]:
+            - strong [ref=f3e214]: Shri
+            - text: N. Hari, is appointed as the Chairman of the Rubber Board. His appointment is for a period of three years. He was a member of the Rubber Board for a period of three years from 28 June 2022, representing small rubber growers from Kerala. Sri. N. Hari, a native of Pallikkathode in Kottayam, also served as Executive Committee Member of the Board from 07 October 2023 to 06 October 2024.
+        - generic [ref=f3e215]:
+          - generic [ref=f3e216]: Executive Director
+          - generic [ref=f3e217]:
+            - strong [ref=f3e218]: Mr. M. Vasanthagesan IRS
+            - text: took over charge as the Executive Director of the Rubber Board, on 17 April 2023. He was working as Additional Commissioner in Customs (Preventive), Kochi.
+    - generic [ref=f3e219]:
+      - heading "Updates and Highlights" [level=4] [ref=f3e221]
+      - list [ref=f3e226]:
+        - listitem [ref=f3e227]:
+          - link "07-11-2025- Stakeholders Grievance addressing VC link Monday to Friday 1 hour from 3.00 PM to 4.00 pm" [ref=f3e228] [cursor=pointer]:
+            - /url: javascript:void(0)
+            - generic [ref=f3e229]: 
+            - text: 07-11-2025- Stakeholders Grievance addressing VC link Monday to Friday 1 hour from 3.00 PM to 4.00 pm
+        - listitem [ref=f3e230]:
+          - link "18-10-2024- Approved EFC, Scheme rules, Modalities and Guidelines" [ref=f3e231] [cursor=pointer]:
+            - /url: javascript:void(0)
+            - generic [ref=f3e232]: 
+            - text: 18-10-2024- Approved EFC, Scheme rules, Modalities and Guidelines
+        - listitem [ref=f3e233]:
+          - link "16-10-2023- Report on Landslides" [ref=f3e234] [cursor=pointer]:
+            - /url: javascript:void(0)
+            - generic [ref=f3e235]: 
+            - text: 16-10-2023- Report on Landslides
+    - generic [ref=f3e236]:
+      - heading "Domestic Market** on 07-07-2026 per 100Kg" [level=4] [ref=f3e238]
+      - generic [ref=f3e239]:
+        - generic [ref=f3e240]:
+          - text:  
+          - list [ref=f3e242]:
+            - listitem [ref=f3e243]:
+              - link "Kottayam" [ref=f3e244] [cursor=pointer]:
+                - /url: "#loc1"
+            - listitem [ref=f3e245]:
+              - link "Kochi" [ref=f3e246] [cursor=pointer]:
+                - /url: "#loc2"
+            - listitem [ref=f3e247]:
+              - link "Agartala" [ref=f3e248] [cursor=pointer]:
+                - /url: "#loc3"
+          - generic [ref=f3e249]:
+            - table [ref=f3e251]:
+              - rowgroup [ref=f3e252]:
+                - row "Category INR ₹ USD $" [ref=f3e253]:
+                  - columnheader "Category" [ref=f3e254]
+                  - columnheader "INR ₹" [ref=f3e255]
+                  - columnheader "USD $" [ref=f3e256]
+              - rowgroup [ref=f3e257]:
+                - row " RSS4  27200.0  285.35" [ref=f3e258]:
+                  - cell " RSS4" [ref=f3e259]:
+                    - generic [ref=f3e260]:
+                      - generic [ref=f3e261]: 
+                      - text: RSS4
+                  - cell " 27200.0" [ref=f3e262]:
+                    - generic [ref=f3e263]: 
+                    - text: "27200.0"
+                  - cell " 285.35" [ref=f3e264]:
+                    - generic [ref=f3e265]: 
+                    - text: "285.35"
+                - row " RSS5  26800.0  281.20" [ref=f3e266]:
+                  - cell " RSS5" [ref=f3e267]:
+                    - generic [ref=f3e268]:
+                      - generic [ref=f3e269]: 
+                      - text: RSS5
+                  - cell " 26800.0" [ref=f3e270]:
+                    - generic [ref=f3e271]: 
+                    - text: "26800.0"
+                  - cell " 281.20" [ref=f3e272]:
+                    - generic [ref=f3e273]: 
+                    - text: "281.20"
+                - row " ISNR20  23100.0  242.35" [ref=f3e274]:
+                  - cell " ISNR20" [ref=f3e275]:
+                    - generic [ref=f3e276]:
+                      - generic [ref=f3e277]: 
+                      - text: ISNR20
+                  - cell " 23100.0" [ref=f3e278]:
+                    - generic [ref=f3e279]: 
+                    - text: "23100.0"
+                  - cell " 242.35" [ref=f3e280]:
+                    - generic [ref=f3e281]: 
+                    - text: "242.35"
+                - row " Latex(60%)  17540.0  184.00" [ref=f3e282]:
+                  - cell " Latex(60%)" [ref=f3e283]:
+                    - generic [ref=f3e284]:
+                      - generic [ref=f3e285]: 
+                      - text: Latex(60%)
+                  - cell " 17540.0" [ref=f3e286]:
+                    - generic [ref=f3e287]: 
+                    - text: "17540.0"
+                  - cell " 184.00" [ref=f3e288]:
+                    - generic [ref=f3e289]: 
+                    - text: "184.00"
+            - text:            
+          - generic [ref=f3e290]: Daily / Weekly / Monthly / Yearly Avg.Price / FAQ on Price
+        - paragraph [ref=f3e291]: "** The prices shown above do not include GST @ 5% on purchase and expenses towards transportation, warehousing and other incidentals. The above prices are reference prices only."
+        - 'heading "*(Price not available). #(Market Holiday). ~(No Transaction)." [level=3] [ref=f3e292]'
+        - paragraph
+    - generic [ref=f3e293]:
+      - heading "International Market on 08-07-2026 per 100Kg" [level=4] [ref=f3e295]
+      - generic [ref=f3e296]:
+        - text:  
+        - list [ref=f3e298]:
+          - listitem [ref=f3e299]:
+            - link "Bangkok" [ref=f3e300] [cursor=pointer]:
+              - /url: "#exloc1"
+        - generic [ref=f3e301]:
+          - table [ref=f3e303]:
+            - rowgroup [ref=f3e304]:
+              - row "Category INR ₹ USD $" [ref=f3e305]:
+                - columnheader "Category" [ref=f3e306]
+                - columnheader "INR ₹" [ref=f3e307]
+                - columnheader "USD $" [ref=f3e308]
+            - rowgroup [ref=f3e309]:
+              - row " RSS1  28657.0  300.70" [ref=f3e310]:
+                - cell " RSS1" [ref=f3e311]:
+                  - generic [ref=f3e312]:
+                    - generic [ref=f3e313]: 
+                    - text: RSS1
+                - cell " 28657.0" [ref=f3e314]:
+                  - generic [ref=f3e315]: 
+                  - text: "28657.0"
+                - cell " 300.70" [ref=f3e316]:
+                  - generic [ref=f3e317]: 
+                  - text: "300.70"
+              - row " RSS2  28485.0  298.85" [ref=f3e318]:
+                - cell " RSS2" [ref=f3e319]:
+                  - generic [ref=f3e320]:
+                    - generic [ref=f3e321]: 
+                    - text: RSS2
+                - cell " 28485.0" [ref=f3e322]:
+                  - generic [ref=f3e323]: 
+                  - text: "28485.0"
+                - cell " 298.85" [ref=f3e324]:
+                  - generic [ref=f3e325]: 
+                  - text: "298.85"
+              - row " RSS3  28327.0  297.20" [ref=f3e326]:
+                - cell " RSS3" [ref=f3e327]:
+                  - generic [ref=f3e328]:
+                    - generic [ref=f3e329]: 
+                    - text: RSS3
+                - cell " 28327.0" [ref=f3e330]:
+                  - generic [ref=f3e331]: 
+                  - text: "28327.0"
+                - cell " 297.20" [ref=f3e332]:
+                  - generic [ref=f3e333]: 
+                  - text: "297.20"
+              - row " RSS4  28241.0  296.30" [ref=f3e334]:
+                - cell " RSS4" [ref=f3e335]:
+                  - generic [ref=f3e336]:
+                    - generic [ref=f3e337]: 
+                    - text: RSS4
+                - cell " 28241.0" [ref=f3e338]:
+                  - generic [ref=f3e339]: 
+                  - text: "28241.0"
+                - cell " 296.30" [ref=f3e340]:
+                  - generic [ref=f3e341]: 
+                  - text: "296.30"
+              - row " RSS5  28198.0  295.80" [ref=f3e342]:
+                - cell " RSS5" [ref=f3e343]:
+                  - generic [ref=f3e344]:
+                    - generic [ref=f3e345]: 
+                    - text: RSS5
+                - cell " 28198.0" [ref=f3e346]:
+                  - generic [ref=f3e347]: 
+                  - text: "28198.0"
+                - cell " 295.80" [ref=f3e348]:
+                  - generic [ref=f3e349]: 
+                  - text: "295.80"
+          - generic [ref=f3e350]:
+            - text: Daily / Weekly / Monthly / Yearly Avg.Price
+            - paragraph [ref=f3e351]: "*(Price not available). #(Market Holiday). ~(No Transaction)."
+    - generic [ref=f3e352]:
+      - heading "Quick Link" [level=4] [ref=f3e354]
+      - generic [ref=f3e356]:
+        - list:
+          - listitem [ref=f3e357]:
+            - link "NR e Marketp.. NR e Marketp.." [ref=f3e358] [cursor=pointer]:
+              - /url: https://www.mrube.in/en-US/
+              - img "NR e Marketp.." [ref=f3e359]
+              - text: NR e Marketp..
+          - listitem [ref=f3e360]:
+            - link "164 Pay Online" [ref=f3e361] [cursor=pointer]:
+              - /url: https://pgbiz.omniware.in/RubberboardofIndia
+              - img "164" [ref=f3e362]
+              - text: Pay Online
+          - listitem [ref=f3e363]:
+            - link "245 Planting Sub.." [ref=f3e364] [cursor=pointer]:
+              - /url: https://serviceonline.gov.in/dbt/
+              - img "245" [ref=f3e365]
+              - text: Planting Sub..
+          - listitem [ref=f3e366]:
+            - link "243 V.Trade Fair" [ref=f3e367] [cursor=pointer]:
+              - /url: https://vtf.rubberboard.org.in/rubberboard
+              - img "243" [ref=f3e368]
+              - text: V.Trade Fair
+          - listitem [ref=f3e369]:
+            - link "220 RUBBER MAGA..." [ref=f3e370] [cursor=pointer]:
+              - /url: http://rubberboard.gov.in/rbfilereader?fileid=1293
+              - img "220" [ref=f3e371]
+              - text: RUBBER MAGA...
+          - listitem [ref=f3e372]:
+            - link "163 EUDR" [ref=f3e373] [cursor=pointer]:
+              - /url: https://bsnr.rubberboard.org.in/index.htm
+              - img "163" [ref=f3e374]
+              - text: EUDR
+          - listitem [ref=f3e375]:
+            - link "148 RubberClinic" [ref=f3e376] [cursor=pointer]:
+              - /url: http://clinic.rubberboard.org.in/
+              - img "148" [ref=f3e377]
+              - text: RubberClinic
+          - listitem [ref=f3e378]:
+            - link "268 EU Sup.Chn." [ref=f3e379] [cursor=pointer]:
+              - /url: https://bsnrapp.rubberboard.org.in
+              - img "268" [ref=f3e380]
+              - text: EU Sup.Chn.
+          - listitem [ref=f3e381]:
+            - link "218 NEWS BULLETI.." [ref=f3e382] [cursor=pointer]:
+              - /url: https://rubberboard.gov.in/rbfilereader?fileid=1176
+              - img "218" [ref=f3e383]
+              - text: NEWS BULLETI..
+          - listitem [ref=f3e384]:
+            - link "171 RSJournal" [ref=f3e385] [cursor=pointer]:
+              - /url: http://www.rubberscience.in/
+              - img "171" [ref=f3e386]
+              - text: RSJournal
+          - listitem [ref=f3e387]:
+            - link "180 RubSIS" [ref=f3e388] [cursor=pointer]:
+              - /url: http://rubsis.rubberboard.org.in
+              - img "180" [ref=f3e389]
+              - text: RubSIS
+          - listitem [ref=f3e390]:
+            - link "174 RUBIS eGov" [ref=f3e391] [cursor=pointer]:
+              - /url: http://www.rbegp.in
+              - img "174" [ref=f3e392]
+              - text: RUBIS eGov
+          - listitem [ref=f3e393]:
+            - link "199 News Clips" [ref=f3e394] [cursor=pointer]:
+              - /url: dailynews
+              - img "199" [ref=f3e395]
+              - text: News Clips
+          - listitem [ref=f3e396]:
+            - link "181 Indian NR" [ref=f3e397] [cursor=pointer]:
+              - /url: http://www.indiannaturalrubber.com
+              - img "181" [ref=f3e398]
+              - text: Indian NR
+          - listitem [ref=f3e399]:
+            - link "236 Land Slide" [ref=f3e400] [cursor=pointer]:
+              - /url: https://gis.duk.ac.in/dev/rrii_lsz
+              - img "236" [ref=f3e401]
+              - text: Land Slide
+    - list [ref=f3e402]:
+      - listitem [ref=f3e403]:
+        - link "Forms" [ref=f3e404] [cursor=pointer]:
+          - /url: javascript:void(0)
+      - listitem [ref=f3e405]:
+        - link "Links" [ref=f3e406] [cursor=pointer]:
+          - /url: javascript:void(0)
+      - listitem [ref=f3e407]:
+        - link "RTI Act" [ref=f3e408] [cursor=pointer]:
+          - /url: javascript:void(0)
+      - listitem [ref=f3e409]:
+        - link "Recruitments" [ref=f3e410] [cursor=pointer]:
+          - /url: javascript:void(0)
+      - listitem [ref=f3e411]:
+        - link "Tenders" [ref=f3e412] [cursor=pointer]:
+          - /url: javascript:void(0)
+      - listitem [ref=f3e413]:
+        - link "Archives" [ref=f3e414] [cursor=pointer]:
+          - /url: javascript:void(0)
+      - listitem [ref=f3e415]:
+        - link "Public Griev." [ref=f3e416] [cursor=pointer]:
+          - /url: javascript:void(0)
+      - listitem [ref=f3e417]:
+        - link "Citizens Chrt." [ref=f3e418] [cursor=pointer]:
+          - /url: javascript:void(0)
+      - listitem [ref=f3e419]:
+        - link "Publications" [ref=f3e420] [cursor=pointer]:
+          - /url: javascript:void(0)
+    - generic [ref=f3e422]:
+      - generic [ref=f3e423]:
+        - heading "Cultural Operation" [level=4] [ref=f3e425]
+        - generic [ref=f3e426]:
+          - list [ref=f3e428]:
+            - listitem [ref=f3e429]:
+              - link "2026-June" [ref=f3e430] [cursor=pointer]:
+                - /url: javascript:void(0)
+                - generic [ref=f3e431]: 
+                - text: 2026-June
+            - listitem [ref=f3e432]:
+              - link "Cultural Operations On 2026-July" [ref=f3e433] [cursor=pointer]:
+                - /url: javascript:void(0)
+                - generic [ref=f3e434]: 
+                - text: Cultural Operations On 2026-July
+              - paragraph [ref=f3e435]: "Raising seedling nurseries: In South India, the fruits of Hevea ripen by the end of July and the dr..."
+            - listitem [ref=f3e436]:
+              - link "2026-August" [ref=f3e437] [cursor=pointer]:
+                - /url: javascript:void(0)
+                - generic [ref=f3e438]: 
+                - text: 2026-August
+          - iframe [ref=f3e441]:
+            - generic [ref=f5e3]:
+              - strong [ref=f5e4]: www.indiantradeportal.in
+              - text: refused to connect.
+      - generic [ref=f3e442]:
+        - heading "Training Calendar" [level=4] [ref=f3e444]
+        - generic [ref=f3e446]:
+          - generic [ref=f3e447]:
+            - link "UpComing" [ref=f3e449] [cursor=pointer]:
+              - /url: javascript:void(0)
+            - link "All" [ref=f3e451] [cursor=pointer]:
+              - /url: javascript:void(0)
+          - generic [ref=f3e452]:
+            - heading "13-07-2026" [level=6] [ref=f3e454]:
+              - generic [ref=f3e455]: 
+              - text: 13-07-2026
+            - link "RP-2 Training on RSS processing and.." [ref=f3e456] [cursor=pointer]:
+              - /url: javascript:void(0)
+          - generic [ref=f3e457]:
+            - heading "15-07-2026" [level=6] [ref=f3e459]:
+              - generic [ref=f3e460]: 
+              - text: 15-07-2026
+            - link "GT-9 Training on Manuring in Rubber.." [ref=f3e461] [cursor=pointer]:
+              - /url: javascript:void(0)
+          - generic [ref=f3e462]:
+            - heading "15-07-2026" [level=6] [ref=f3e464]:
+              - generic [ref=f3e465]: 
+              - text: 15-07-2026
+            - link "RP-9 Skill development training for.." [ref=f3e466] [cursor=pointer]:
+              - /url: javascript:void(0)
+          - generic [ref=f3e468] [cursor=pointer]:
+            - generic [ref=f3e469]: 
+            - text: View Training Calendar
+      - generic [ref=f3e470]:
+        - heading "Photo Gallery" [level=4] [ref=f3e472]
+        - list [ref=f3e475]:
+          - listitem [ref=f3e476]:
+            - link "Field Planting" [ref=f3e477] [cursor=pointer]:
+              - /url: javascript:void(0)
+              - img "Field Planting" [ref=f3e478]
+            - link "LATEX HARVESTING" [ref=f3e479] [cursor=pointer]:
+              - /url: javascript:void(0)
+              - img "LATEX HARVESTING" [ref=f3e480]
+            - link "Diseases in rubber plants" [ref=f3e481] [cursor=pointer]:
+              - /url: javascript:void(0)
+              - img "Diseases in rubber plants" [ref=f3e482]
+            - link "Cover Crops" [ref=f3e483] [cursor=pointer]:
+              - /url: javascript:void(0)
+              - img "Cover Crops" [ref=f3e484]
+          - link [ref=f3e485] [cursor=pointer]:
+            - /url: photoGallery
+            - generic [ref=f3e486]: More
+        - heading "Video Gallery" [level=4] [ref=f3e488]
+        - list [ref=f3e491]:
+          - listitem [ref=f3e493]:
+            - generic [ref=f3e494]:
+              - img
+              - generic [ref=f3e499] [cursor=pointer]: 
+          - link [ref=f3e500] [cursor=pointer]:
+            - /url: videoGallery
+            - generic [ref=f3e501]: More
+  - generic [ref=f3e504]:
+    - link "ITU WTSA New Delhi 2024" [ref=f3e505] [cursor=pointer]:
+      - /url: https://www.itu.int/wtsa/2024/
+      - img "ITU WTSA New Delhi 2024" [ref=f3e506]
+    - link "Rubber Skill Development Council" [ref=f3e507] [cursor=pointer]:
+      - /url: http://rsdcindia.in/ssc/
+      - img "Rubber Skill Development Council" [ref=f3e508]
+    - link "Pradhan Mantri Kaushal Vikas Yojana" [ref=f3e509] [cursor=pointer]:
+      - /url: http://pmkvyofficial.org/
+      - img "Pradhan Mantri Kaushal Vikas Yojana" [ref=f3e510]
+    - link "SHE BOX PORTAL" [ref=f3e511] [cursor=pointer]:
+      - /url: https://shebox.wcd.gov.in/
+      - img "SHE BOX PORTAL" [ref=f3e512]
+    - link "Public Grievance Redress" [ref=f3e513] [cursor=pointer]:
+      - /url: https://pgportal.gov.in/
+      - img "Public Grievance Redress" [ref=f3e514]
+    - link "Ministry of Commerce and Industry" [ref=f3e515] [cursor=pointer]:
+      - /url: "http://commerce.gov.in "
+      - img "Ministry of Commerce and Industry" [ref=f3e516]
+    - link "CBEC ICEGATE" [ref=f3e517] [cursor=pointer]:
+      - /url: "https://www.icegate.gov.in/ "
+      - img "CBEC ICEGATE" [ref=f3e518]
+    - link "National Portal" [ref=f3e519] [cursor=pointer]:
+      - /url: https://www.india.gov.in/
+      - img "National Portal" [ref=f3e520]
+    - link "India Brand Equity Foundation" [ref=f3e521] [cursor=pointer]:
+      - /url: https://www.ibef.org/
+      - img "India Brand Equity Foundation" [ref=f3e522]
+    - link "Digital India" [ref=f3e523] [cursor=pointer]:
+      - /url: http://www.digitalindia.gov.in/
+      - img "Digital India" [ref=f3e524]
+    - link "IRRDB" [ref=f3e525] [cursor=pointer]:
+      - /url: "https://www.theirrdb.org/ "
+      - img "IRRDB" [ref=f3e526]
+    - link "My Government" [ref=f3e527] [cursor=pointer]:
+      - /url: https://www.mygov.in/
+      - img "My Government" [ref=f3e528]
+    - link "Government e-Market" [ref=f3e529] [cursor=pointer]:
+      - /url: https://gem.gov.in
+      - img "Government e-Market" [ref=f3e530]
+    - link "ANRPC" [ref=f3e531] [cursor=pointer]:
+      - /url: http://www.anrpc.org
+      - img "ANRPC" [ref=f3e532]
+    - link "International Rubber Study Group" [ref=f3e533] [cursor=pointer]:
+      - /url: http://www.rubberstudy.com
+      - img "International Rubber Study Group" [ref=f3e534]
+    - link "Directorate General of Foriegn Trade" [ref=f3e535] [cursor=pointer]:
+      - /url: http://www.dgft.gov.in/
+      - img "Directorate General of Foriegn Trade" [ref=f3e536]
+  - list [ref=f3e539]:
+    - listitem [ref=f3e540]:
+      - link "Contact Us" [ref=f3e541] [cursor=pointer]:
+        - /url: javascript:void(0)
+    - listitem [ref=f3e542]:
+      - link "Feedback" [ref=f3e543] [cursor=pointer]:
+        - /url: javascript:void(0)
+    - listitem [ref=f3e544]:
+      - link "Web Information Manager" [ref=f3e545] [cursor=pointer]:
+        - /url: javascript:void(0)
+    - listitem [ref=f3e546]:
+      - link "Privacy" [ref=f3e547] [cursor=pointer]:
+        - /url: javascript:void(0)
+    - listitem [ref=f3e548]:
+      - link "Hyperlinking" [ref=f3e549] [cursor=pointer]:
+        - /url: javascript:void(0)
+    - listitem [ref=f3e550]:
+      - link "Copyright" [ref=f3e551] [cursor=pointer]:
+        - /url: javascript:void(0)
+    - listitem [ref=f3e552]:
+      - link "Terms" [ref=f3e553] [cursor=pointer]:
+        - /url: javascript:void(0)
+    - listitem [ref=f3e554]:
+      - link "Site Map" [ref=f3e555] [cursor=pointer]:
+        - /url: javascript:void(0)
+  - paragraph [ref=f3e557]: © Copyright 2018, all rights reserved with Rubber Board, Ministry of Commerce and Industry
+  - paragraph [ref=f3e559]: Last reviewed and updated on, 07-Jul-2026
