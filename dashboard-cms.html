@@ -653,7 +653,7 @@ const DATA_BASE_URL = "https://product-tpml.github.io/Agro_dashboard_hosted";
   }
 
   function renderSuggestions() {
-    return '<div class="suggestions'>'+state.suggestions.map(function(r,i){return'<button type="button" data-suggestion-index="'+i+'"><span>'+highlightMatch(getSuggestionLabel(r),state.query)+'</span><small>'+getSuggestionMeta(r)+'</small></button>'}).join("")+'</div>';
+    return '<div class="suggestions">'+state.suggestions.map(function(r,i){return'<button type="button" data-suggestion-index="'+i+'"><span>'+highlightMatch(getSuggestionLabel(r),state.query)+'</span><small>'+getSuggestionMeta(r)+'</small></button>'}).join("")+'</div>';
   }
 
   function syncSearchSuggestionsUi() { document.querySelectorAll("[data-search-suggestions]").forEach(function(n){n.innerHTML=state.suggestions.length?renderSuggestions():""}); bindSuggestionEvents(); }

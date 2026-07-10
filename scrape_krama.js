@@ -2316,6 +2316,11 @@ function htmlPage() {
     button:not(:disabled):hover {
       transform: translateY(-1px);
     }
+    .push-btn {
+      background: linear-gradient(135deg, #1f4f6f, #2f7459);
+      margin-top: 8px;
+    }
+    .push-btn.hidden { display: none; }
     .status {
       margin-top: 18px;
       padding: 14px 16px;
@@ -2354,6 +2359,7 @@ function htmlPage() {
       <input id="reportDate" type="date" max="9999-12-31">
     </div>
     <button id="fetchButton" type="button" disabled>Fetch Data</button>
+    <button id="pushButton" type="button" class="push-btn hidden" disabled>Push to GitHub</button>
     <div id="status" class="status">Select a date to begin.</div>
   </div>
   <script>
@@ -2361,6 +2367,7 @@ function htmlPage() {
     const dateInput = document.getElementById("reportDate");
     const dateField = document.getElementById("dateField");
     const fetchButton = document.getElementById("fetchButton");
+    const pushButton = document.getElementById("pushButton");
     const statusEl = document.getElementById("status");
     const sourcePanel = document.getElementById("sourcePanel");
 
@@ -2436,8 +2443,41 @@ function htmlPage() {
           "Log: " + result.logPath,
           "success"
         );
+        pushButton.classList.remove("hidden");
+        pushButton.disabled = false;
       } catch (error) {
         setStatus("Run failed.\\n" + error.message, "error");
+      } finally {
+        sourceInput.disabled = false;
+        dateInput.disabled = false;
+        fetchButton.disabled = sourceNeedsDate(sourceInput.value) ? !dateInput.value : false;
+      }
+    });
+
+    pushButton.addEventListener("click", async () => {
+      pushButton.disabled = true;
+      fetchButton.disabled = true;
+      sourceInput.disabled = true;
+      dateInput.disabled = true;
+      setStatus("Building static pages and pushing to GitHub...");
+      try {
+        const response = await fetch("/push", {
+          method: "POST", headers: { "Content-Type": "application/json" }
+        });
+        const result = await response.json();
+        if (!response.ok || !result.ok) {
+          throw new Error(result.error || "Push failed");
+        }
+        setStatus(
+          "Pushed successfully!\\n" +
+          "Rows: " + result.rowCount + "\\n" +
+          "GitHub Pages will deploy in ~1 min.",
+          "success"
+        );
+        pushButton.classList.add("hidden");
+      } catch (error) {
+        setStatus("Push failed.\\n" + error.message, "error");
+        pushButton.disabled = false;
       } finally {
         sourceInput.disabled = false;
         dateInput.disabled = false;
@@ -2519,6 +2559,62 @@ async function startUiServer(options) {
             isRunning = false;
           }
         });
+        return;
+      }
+
+      if (req.method === "POST" && req.url === "/push") {
+        if (isRunning) {
+          res.writeHead(409, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ ok: false, error: "A push is already in progress." }));
+          return;
+        }
+        isRunning = true;
+        (async () => {
+          try {
+            const { execSync } = require("child_process");
+            log("PUSH", "Building static pages...");
+            execSync("npm run build:pages", { cwd: APP_ROOT_DIR, stdio: "pipe", timeout: 120000 });
+
+            log("PUSH", "Staging data files...");
+            execSync("git add docs/data/*.json", { cwd: APP_ROOT_DIR, stdio: "pipe" });
+            const dateStr = new Date().toISOString().slice(0, 10);
+            execSync(`git commit -m "data update ${dateStr}"`, { cwd: APP_ROOT_DIR, stdio: "pipe" });
+
+            // Inject PAT from .env if set
+            let pushRemote = "origin";
+            let cleanOrigin = null;
+            const gitPat = process.env.GIT_PAT;
+            if (gitPat) {
+              cleanOrigin = execSync("git remote get-url origin", { cwd: APP_ROOT_DIR, stdio: "pipe" }).toString().trim();
+              const urlObj = new URL(cleanOrigin);
+              pushRemote = `${urlObj.protocol}//product-TPML:${gitPat}@${urlObj.host}${urlObj.pathname}`;
+              execSync(`git remote set-url origin ${pushRemote}`, { cwd: APP_ROOT_DIR, stdio: "pipe" });
+            }
+
+            log("PUSH", "Pushing to GitHub...");
+            execSync("git push", { cwd: APP_ROOT_DIR, stdio: "pipe", timeout: 60000 });
+
+            // Restore clean URL
+            if (cleanOrigin) {
+              execSync(`git remote set-url origin ${cleanOrigin}`, { cwd: APP_ROOT_DIR, stdio: "pipe" });
+            }
+
+            log("PUSH", "Push complete");
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ ok: true, rowCount: "pushed" }));
+          } catch (error) {
+            const msg = error.message || String(error);
+            if (msg.includes("nothing to commit")) {
+              res.writeHead(200, { "Content-Type": "application/json" });
+              res.end(JSON.stringify({ ok: true, rowCount: "no changes", note: "nothing to commit" }));
+            } else {
+              res.writeHead(500, { "Content-Type": "application/json" });
+              res.end(JSON.stringify({ ok: false, error: msg }));
+            }
+          } finally {
+            isRunning = false;
+          }
+        })();
         return;
       }
 

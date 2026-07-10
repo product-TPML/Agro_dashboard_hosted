@@ -1,7 +1,25 @@
 const { execSync } = require("child_process");
+const fs = require("fs");
 const path = require("path");
 
 const ROOT_DIR = path.resolve(__dirname, "..");
+const ENV_PATH = path.join(ROOT_DIR, ".env");
+const REMOTE_NAME = "origin";
+
+function loadGitPat() {
+  if (!fs.existsSync(ENV_PATH)) return null;
+  const lines = fs.readFileSync(ENV_PATH, "utf8").split(/\r?\n/);
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) continue;
+    const sep = trimmed.indexOf("=");
+    if (sep <= 0) continue;
+    const key = trimmed.slice(0, sep).trim();
+    const value = trimmed.slice(sep + 1).trim();
+    if (key === "GIT_PAT" && value) return value;
+  }
+  return null;
+}
 
 function run(description, command, cwd) {
   console.log(`\n[${description}]`);
@@ -27,19 +45,38 @@ try {
   execSync('git add docs/data/*.json', { cwd: ROOT_DIR, stdio: "pipe" });
   const date = new Date().toISOString().slice(0, 10);
   execSync(`git commit -m "data update ${date}"`, { cwd: ROOT_DIR, stdio: "pipe" });
-  execSync("git push", { cwd: ROOT_DIR, stdio: "pipe" });
-  console.log("  ✓ Committed and pushed to GitHub");
 } catch (err) {
   if (err.message.includes("nothing to commit")) {
     console.log("  — No new data to commit (data unchanged)");
-  } else if (err.message.includes("could not read Username")) {
-    console.error("\n  ✗ Git push failed: not authenticated.");
-    console.error("    Run once: gh auth login");
-    process.exit(1);
-  } else {
-    console.error(`\n  ✗ Git push failed: ${err.message}`);
-    console.error("    Check your GitHub authentication and try again.");
-    process.exit(1);
+    process.exit(0);
+  }
+  console.error(`\n  ✗ Git commit failed: ${err.message}`);
+  process.exit(1);
+}
+
+// Inject PAT into remote URL if available
+const gitPat = loadGitPat();
+const cleanUrl = execSync(`git remote get-url ${REMOTE_NAME}`, { cwd: ROOT_DIR, stdio: "pipe" }).toString().trim();
+let patUrl = null;
+
+if (gitPat) {
+  const urlObj = new URL(cleanUrl);
+  patUrl = `${urlObj.protocol}//product-TPML:${gitPat}@${urlObj.host}${urlObj.pathname}`;
+  execSync(`git remote set-url ${REMOTE_NAME} ${patUrl}`, { cwd: ROOT_DIR, stdio: "pipe" });
+  console.log("  ✓ Injected GitHub PAT for push");
+}
+
+try {
+  execSync("git push", { cwd: ROOT_DIR, stdio: "pipe" });
+  console.log("  ✓ Committed and pushed to GitHub");
+} catch (err) {
+  console.error(`\n  ✗ Git push failed: ${err.message}`);
+  console.error("    Check that GIT_PAT in .env has repo scope.");
+  process.exit(1);
+} finally {
+  // Restore clean remote URL
+  if (patUrl) {
+    execSync(`git remote set-url ${REMOTE_NAME} ${cleanUrl}`, { cwd: ROOT_DIR, stdio: "pipe" });
   }
 }
 
