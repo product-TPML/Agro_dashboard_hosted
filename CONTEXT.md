@@ -768,7 +768,8 @@ Current `csb_silk` scope:
   - `max_price` from `Max`
   - `modal_price` from `Average`
   - `arrivals` from `Quantity`
-- stores `grade` and `unit` as null / empty when source data is not present
+- stores `unit = Quintal` for arrivals
+- labels silk price fields in the UI as prices per `Kg`
 - stores missing `Quantity` as null, for example on `Raw Silk (Filature)`
 - classifies `Silk` as:
   - `perishability = non-perishable`
@@ -797,8 +798,9 @@ Current `rubber_board` scope:
   - `commodity = Rubber`
   - `variety` from the selected official grade
   - `report_date` from the row-level source date
-  - `modal_price` from the INR price per 100 kg
-- stores `arrivals`, `unit`, `grade`, `min_price`, and `max_price` as null / empty because the source does not provide them in this flow
+  - `canonical_price` from the INR price per 100 kg
+  - `canonical_price_unit = per 100 kg`
+- stores `arrivals`, `unit`, `grade`, `min_price`, `max_price`, and `modal_price` as null / empty because the source does not provide them in this flow
 - classifies `Rubber` as:
   - `perishability = non-perishable`
   - `category = miscellaneous`
@@ -815,14 +817,16 @@ Current `spices_board` scope:
   - `KERALA`
 - parses only rows for the target market:
   - `Cochin`
+- excludes `Pepper` rows during normalization and rebuild cleanup
 - writes one row per displayed spice-grade row for that date
 - stores:
   - `commodity` from the source `Spice` column
   - `market = Cochin`
   - `report_date` from the row-level source date
   - `grade` from the source `Grade` column
-  - `modal_price` from the source `Avg` column
-- stores `variety`, `arrivals`, `unit`, `min_price`, and `max_price` as null / empty because they are not used in this source flow
+  - `canonical_price` from the source `Avg` column
+  - `canonical_price_unit = per KG`
+- stores `variety`, `arrivals`, `unit`, `min_price`, `max_price`, and `modal_price` as null / empty because they are not used in this source flow
 - stores source grade `-` as blank
 - classifies all inserted rows as:
   - `perishability = non-perishable`
@@ -848,6 +852,7 @@ Current `coffee_board` scope:
   - `report_date` from the PDF section date
   - `min_price` and `max_price` from the source range values
   - `unit = 50 Kg`
+- labels coffee price ranges in the UI as prices per `50 Kg`
 - stores `grade`, `arrivals`, and `modal_price` as null / empty because they are not present in this source section
 - classifies all inserted rows as:
   - `perishability = non-perishable`

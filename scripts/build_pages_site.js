@@ -7,6 +7,13 @@ const DB_PATH = path.join(ROOT_DIR, "data", "agro_dashboard.db");
 const PUBLIC_DIR = path.join(ROOT_DIR, "local-dashboard", "public");
 const PUBLIC_DATA_DIR = path.join(PUBLIC_DIR, "data");
 const DOCS_DIR = path.join(ROOT_DIR, "docs");
+const SOURCE_PRICE_DISPLAY_UNITS = {
+  necc_egg: "100 eggs",
+  csb_silk: "Kg",
+  spices_board: "per KG",
+  coffee_board: "50 Kg",
+  rubber_board: "per 100 kg",
+};
 
 function main() {
   ensureDatabaseExists();
@@ -30,33 +37,10 @@ function main() {
         max_price,
         modal_price,
         canonical_price,
-        canonical_price_unit,
-        price_100_pieces,
-        price_1_piece,
-        price_1_tray
+        canonical_price_unit
       FROM price_observations_flat
       ORDER BY report_date ASC, commodity ASC, market ASC, variety ASC, grade ASC
-    `).all().map((row) => ({
-      rowKey: row.row_key,
-      reportDate: row.report_date,
-      sourceId: row.source_id,
-      commodity: row.commodity,
-      perishability: row.perishability,
-      category: row.category,
-      market: row.market,
-      variety: row.variety,
-      grade: row.grade,
-      arrivals: row.arrivals,
-      unit: row.unit,
-      minPrice: row.min_price,
-      maxPrice: row.max_price,
-      modalPrice: row.modal_price,
-      canonicalPrice: row.canonical_price,
-      canonicalPriceUnit: row.canonical_price_unit,
-      price100Pieces: row.price_100_pieces,
-      price1Piece: row.price_1_piece,
-      price1Tray: row.price_1_tray,
-    }));
+    `).all().map(mapObservationRow);
 
     const searchIndex = {
       commodities: db.prepare("SELECT name FROM commodities ORDER BY name ASC").all().map((row) => row.name),
@@ -98,6 +82,38 @@ function main() {
   } finally {
     db.close();
   }
+}
+
+function mapObservationRow(row) {
+  return {
+    rowKey: row.row_key,
+    reportDate: row.report_date,
+    sourceId: row.source_id,
+    commodity: row.commodity,
+    perishability: row.perishability,
+    category: row.category,
+    market: row.market,
+    variety: row.variety,
+    grade: row.grade,
+    arrivals: row.arrivals,
+    unit: row.unit,
+    minPrice: row.min_price,
+    maxPrice: row.max_price,
+    modalPrice: row.modal_price,
+    canonicalPrice: row.canonical_price,
+    canonicalPriceUnit: row.canonical_price_unit,
+    priceDisplayUnit: getPriceDisplayUnit(row),
+  };
+}
+
+function getPriceDisplayUnit(row) {
+  if (row.source_id === "spices_board" || row.source_id === "rubber_board" || row.source_id === "necc_egg") {
+    return row.canonical_price_unit || SOURCE_PRICE_DISPLAY_UNITS[row.source_id] || null;
+  }
+  if (row.source_id === "coffee_board") {
+    return row.unit || SOURCE_PRICE_DISPLAY_UNITS.coffee_board;
+  }
+  return SOURCE_PRICE_DISPLAY_UNITS[row.source_id] || null;
 }
 
 function ensureDatabaseExists() {

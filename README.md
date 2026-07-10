@@ -35,6 +35,8 @@ That command:
 - writes those files to `local-dashboard/public/data/`
 - copies the deployable site into `docs/`
 
+The exported payloads now preserve source-specific unit labels for silk, spices, coffee, rubber, and egg rows.
+
 For GitHub Pages:
 
 1. run `npm run build:pages`

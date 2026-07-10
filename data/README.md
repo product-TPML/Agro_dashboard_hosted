@@ -15,6 +15,14 @@ npm run build:static-db
 
 The build script recreates the database from the workbook each time.
 
+Rebuild normalization also:
+
+- removes persisted `spices_board` rows where `commodity = Pepper`
+- stores `spices_board` prices through `canonical_price` with unit `per KG`
+- stores `rubber_board` prices through `canonical_price` with unit `per 100 kg`
+- stores `csb_silk` arrivals with unit `Quintal`
+- preserves `coffee_board` range rows with unit `50 Kg`
+
 ## Core Tables
 
 - `commodities`

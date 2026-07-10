@@ -71,6 +71,7 @@ const RUBBER_BOARD_GRADE_CONFIG = [
 const RUBBER_BOARD_TARGET_MARKETS = new Set(["Kottayam", "Kochi"]);
 const SPICES_BOARD_TARGET_STATE = "KERALA";
 const SPICES_BOARD_TARGET_MARKET = "Cochin";
+const SPICES_BOARD_EXCLUDED_COMMODITIES = new Set(["Pepper"]);
 const COFFEE_BOARD_MARKET = "Karnataka";
 const COFFEE_BOARD_VARIETIES = [
   "Arabica Parchment",
@@ -785,9 +786,6 @@ function normalizeKramaData(data, reportDate, scrapedAt) {
         modalPrice: parseLooseNumber(row["Modal (Rs.)"]),
         canonicalPrice: null,
         canonicalPriceUnit: null,
-        price100Pieces: null,
-        price1Piece: null,
-        price1Tray: null,
         scrapedAt,
       });
     }
@@ -822,6 +820,9 @@ function normalizeMarketNameForDb(sourceId, market) {
     }
     if (text === "Mysuru") {
       return "MYSURU";
+    }
+    if (text === "Hospet") {
+      return "HOSAPETE";
     }
   }
   if (sourceId === "csb_silk") {
@@ -931,7 +932,7 @@ function parseNeccEggHtml(html, reportDate) {
     throw new Error(`Selected day ${dayNumber} was not present in the NECC table.`);
   }
 
-  const targetLabels = new Set(["Bengaluru (CC)", "Mysuru"]);
+  const targetLabels = new Set(["Bengaluru (CC)", "Mysuru", "Hospet"]);
   const rowRegex = /<tr align="center">\s*<td align='left'>([^<]+)<\/td>([\s\S]*?)<\/tr>/gi;
   const observations = [];
   let rowMatch;
@@ -948,8 +949,8 @@ function parseNeccEggHtml(html, reportDate) {
       continue;
     }
 
-    const price100Pieces = parseLooseNumber(dayValue);
-    if (price100Pieces === null) {
+    const sourcePrice = parseLooseNumber(dayValue);
+    if (sourcePrice === null) {
       continue;
     }
 
@@ -970,11 +971,8 @@ function parseNeccEggHtml(html, reportDate) {
       minPrice: null,
       maxPrice: null,
       modalPrice: null,
-      canonicalPrice: price100Pieces,
-      canonicalPriceUnit: "100 pieces",
-      price100Pieces,
-      price1Piece: Number((price100Pieces / 100).toFixed(2)),
-      price1Tray: Number(((price100Pieces / 100) * 30).toFixed(2)),
+      canonicalPrice: sourcePrice,
+      canonicalPriceUnit: "100 eggs",
       scrapedAt: getIndiaTimestamp(),
     });
   }
@@ -1075,15 +1073,12 @@ async function scrapeCsbSilk() {
       variety: row.variety,
       grade: "",
       arrivals: parseLooseNumber(row.quantity),
-      unit: "",
+      unit: "Quintal",
       minPrice: parseLooseNumber(row.min),
       maxPrice: parseLooseNumber(row.max),
       modalPrice: parseLooseNumber(row.average),
       canonicalPrice: null,
       canonicalPriceUnit: null,
-      price100Pieces: null,
-      price1Piece: null,
-      price1Tray: null,
       scrapedAt,
     };
   });
@@ -1139,7 +1134,11 @@ async function scrapeSpicesBoard(dateInput) {
   }
 
   const extractedRows = parseSpicesBoardHtml(response.body)
-    .filter((row) => row.state === SPICES_BOARD_TARGET_STATE && row.market === SPICES_BOARD_TARGET_MARKET);
+    .filter((row) => {
+      return row.state === SPICES_BOARD_TARGET_STATE
+        && row.market === SPICES_BOARD_TARGET_MARKET
+        && !SPICES_BOARD_EXCLUDED_COMMODITIES.has(row.commodity);
+    });
   if (extractedRows.length === 0) {
     throw new Error(`No Spices Board rows were found for ${SPICES_BOARD_TARGET_MARKET} on ${fileDateStr}.`);
   }
@@ -1169,12 +1168,9 @@ async function scrapeSpicesBoard(dateInput) {
         unit: "",
         minPrice: null,
         maxPrice: null,
-        modalPrice,
-        canonicalPrice: null,
-        canonicalPriceUnit: null,
-        price100Pieces: null,
-        price1Piece: null,
-        price1Tray: null,
+        modalPrice: null,
+        canonicalPrice: modalPrice,
+        canonicalPriceUnit: "per KG",
         scrapedAt,
       };
     })
@@ -1393,9 +1389,6 @@ async function scrapeCoffeeBoard(dateInput) {
     modalPrice: null,
     canonicalPrice: null,
     canonicalPriceUnit: null,
-    price100Pieces: null,
-    price1Piece: null,
-    price1Tray: null,
     scrapedAt,
   }));
 
@@ -1511,12 +1504,9 @@ async function scrapeRubberBoard(dateInput) {
         unit: "",
         minPrice: null,
         maxPrice: null,
-        modalPrice: row.modalPrice,
-        canonicalPrice: null,
-        canonicalPriceUnit: null,
-        price100Pieces: null,
-        price1Piece: null,
-        price1Tray: null,
+        modalPrice: null,
+        canonicalPrice: row.modalPrice,
+        canonicalPriceUnit: "per 100 kg",
         scrapedAt,
       });
     }
@@ -1539,7 +1529,7 @@ function ensureLocalDatabaseExists() {
 
 function ensureExpectedDbSchema(db) {
   const columns = db.prepare("PRAGMA table_info(price_observations)").all().map((row) => row.name);
-  const requiredColumns = ["source_id", "canonical_price", "price_100_pieces", "price_1_piece", "price_1_tray"];
+  const requiredColumns = ["source_id", "canonical_price", "canonical_price_unit"];
   const missing = requiredColumns.filter((column) => !columns.includes(column));
   if (missing.length) {
     throw new Error(`Local DB schema is outdated. Missing columns: ${missing.join(", ")}. Run npm run build:static-db first.`);
@@ -1581,9 +1571,8 @@ function syncLocalDb(payload, context) {
     const upsertObservation = db.prepare(`
       INSERT INTO price_observations (
         row_key, report_date, heading, commodity_id, market_id, variety_id, grade_id, arrivals, unit_id,
-        min_price, max_price, modal_price, source_id, canonical_price, canonical_price_unit,
-        price_100_pieces, price_1_piece, price_1_tray, scraped_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        min_price, max_price, modal_price, source_id, canonical_price, canonical_price_unit, scraped_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(row_key) DO UPDATE SET
         heading = excluded.heading,
         arrivals = excluded.arrivals,
@@ -1593,9 +1582,6 @@ function syncLocalDb(payload, context) {
         modal_price = excluded.modal_price,
         canonical_price = excluded.canonical_price,
         canonical_price_unit = excluded.canonical_price_unit,
-        price_100_pieces = excluded.price_100_pieces,
-        price_1_piece = excluded.price_1_piece,
-        price_1_tray = excluded.price_1_tray,
         scraped_at = excluded.scraped_at
     `);
     const upsertRun = db.prepare(`
@@ -1659,9 +1645,6 @@ function syncLocalDb(payload, context) {
           row.sourceId,
           row.canonicalPrice,
           row.canonicalPriceUnit,
-          row.price100Pieces,
-          row.price1Piece,
-          row.price1Tray,
           row.scrapedAt
         );
       }
@@ -2383,11 +2366,11 @@ function htmlPage() {
 
     const sourceCopy = {
       krama: "KRAMA: scrapes the selected report date and writes commodity market rows to the local DB.",
-      necc_egg: "NECC Egg: scrapes the Daily Rate Sheet for the selected month/year and stores Bengaluru and Mysuru egg prices for the selected day.",
-      csb_silk: "CSB Silk: fetches today's official silk price page and stores market rows in the local DB.",
-      rubber_board: "Rubber Board: posts the selected date to the official daily market price form and stores Kottayam and Kochi rows for RSS4, RSS5, ISNR20, and Latex (60%).",
-      spices_board: "Spices Board: fetches the selected date from the official current market price page with Kerala fixed and stores Cochin rows for all listed spices.",
-      coffee_board: "Coffee Board: downloads the official dated PDF report from the archive and stores Karnataka raw coffee price ranges for the four daily varieties."
+      necc_egg: "NECC Egg: scrapes the Daily Rate Sheet for the selected month/year and stores Bengaluru, Mysuru, and Hospet egg prices for the selected day as one price for 100 eggs.",
+      csb_silk: "CSB Silk: fetches today's official silk price page, stores arrivals in quintals, and keeps source prices labeled per Kg.",
+      rubber_board: "Rubber Board: posts the selected date to the official daily market price form and stores single prices per 100 kg for Kottayam and Kochi rows across RSS4, RSS5, ISNR20, and Latex (60%).",
+      spices_board: "Spices Board: fetches the selected date from the official current market price page with Kerala fixed, excludes Pepper, and stores Cochin single prices per KG.",
+      coffee_board: "Coffee Board: downloads the official dated PDF report from the archive and stores Karnataka raw coffee min/max price ranges per 50 Kg for the four daily varieties."
     };
 
     function sourceNeedsDate(sourceId) {

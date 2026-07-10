@@ -923,37 +923,169 @@
       && String(row.unit || "").trim();
   }
 
+  function getRowPriceProfile(row) {
+    if (row && row.sourceId === "necc_egg") {
+      return {
+        mode: "single",
+        columns: [
+          {
+            kind: "max",
+            key: "canonicalPrice",
+            label: getSinglePriceLabel(row),
+            color: PRICE_COLORS.max,
+            strokeWidth: "3.5",
+            dashArray: "",
+          },
+        ],
+      };
+    }
+
+    if (row && row.sourceId === "spices_board") {
+      return {
+        mode: "single",
+        columns: [
+          {
+            kind: "max",
+            key: "canonicalPrice",
+            label: getSinglePriceLabel(row),
+            color: PRICE_COLORS.max,
+            strokeWidth: "3.5",
+            dashArray: "",
+          },
+        ],
+      };
+    }
+
+    if (row && row.sourceId === "rubber_board") {
+      return {
+        mode: "single",
+        columns: [
+          {
+            kind: "max",
+            key: "canonicalPrice",
+            label: getSinglePriceLabel(row),
+            color: PRICE_COLORS.max,
+            strokeWidth: "3.5",
+            dashArray: "",
+          },
+        ],
+      };
+    }
+
+    if (row && row.sourceId === "coffee_board") {
+      const priceUnit = row.priceDisplayUnit || row.unit || "50 Kg";
+      return {
+        mode: "range",
+        columns: [
+          {
+            kind: "max",
+            key: "maxPrice",
+            label: buildRsPerUnitLabel("Max Price", priceUnit),
+            color: PRICE_COLORS.max,
+            strokeWidth: "3.5",
+            dashArray: "",
+          },
+          {
+            kind: "min",
+            key: "minPrice",
+            label: buildRsPerUnitLabel("Min Price", priceUnit),
+            color: PRICE_COLORS.min,
+            strokeWidth: "3",
+            dashArray: "",
+          },
+        ],
+      };
+    }
+
+    if (row && row.sourceId === "csb_silk") {
+      const priceUnit = row.priceDisplayUnit || "Kg";
+      return {
+        mode: "triple",
+        columns: [
+          {
+            kind: "max",
+            key: "maxPrice",
+            label: buildRsPerUnitLabel("Max Price", priceUnit),
+            color: PRICE_COLORS.max,
+            strokeWidth: "3.5",
+            dashArray: "",
+          },
+          {
+            kind: "min",
+            key: "minPrice",
+            label: buildRsPerUnitLabel("Min Price", priceUnit),
+            color: PRICE_COLORS.min,
+            strokeWidth: "3",
+            dashArray: "",
+          },
+          {
+            kind: "modal",
+            key: "modalPrice",
+            label: buildRsPerUnitLabel("Average Price", priceUnit),
+            color: PRICE_COLORS.modal,
+            strokeWidth: "3",
+            dashArray: "10 6",
+          },
+        ],
+      };
+    }
+
+    return {
+      mode: "triple",
+      columns: [
+        {
+          kind: "max",
+          key: "maxPrice",
+          label: getUiText("max_price_rs", "Max Price (Rs.)"),
+          color: PRICE_COLORS.max,
+          strokeWidth: "3.5",
+          dashArray: "",
+        },
+        {
+          kind: "min",
+          key: "minPrice",
+          label: getUiText("min_price_rs", "Min Price (Rs.)"),
+          color: PRICE_COLORS.min,
+          strokeWidth: "3",
+          dashArray: "",
+        },
+        {
+          kind: "modal",
+          key: "modalPrice",
+          label: getUiText("modal_price_rs", "Modal Price (Rs.)"),
+          color: PRICE_COLORS.modal,
+          strokeWidth: "3",
+          dashArray: "10 6",
+        },
+      ],
+    };
+  }
+
+  function buildRsPerUnitLabel(baseLabel, unit) {
+    return `${baseLabel} (Rs./${unit})`;
+  }
+
+  function getSinglePriceLabel(row) {
+    const unit = row && row.priceDisplayUnit ? row.priceDisplayUnit : "";
+    return unit ? `Price (${unit})` : getUiText("price_label", "Price");
+  }
+
   function getRowPriceMode(row) {
-    return row && row.sourceId === "necc_egg" ? "single" : "triple";
+    return getRowPriceProfile(row).mode;
   }
 
   function getCanonicalPriceKey(row) {
-    if (row && row.sourceId === "necc_egg") {
-      return "price100Pieces";
-    }
-    return "modalPrice";
+    const profile = getRowPriceProfile(row);
+    return profile.columns[0] ? profile.columns[0].key : "modalPrice";
   }
 
   function getCanonicalPriceLabel(row) {
-    if (row && row.sourceId === "necc_egg") {
-      return getUiText("price_100_pieces_label", "Price (100 pieces)");
-    }
-    return getUiText("modal_short", "Modal");
+    const profile = getRowPriceProfile(row);
+    return profile.columns[0] ? profile.columns[0].label : getUiText("modal_short", "Modal");
   }
 
-  function getPriceHeaders(mode) {
-    if (mode === "single") {
-      return [
-        getUiText("price_100_pieces_label", "Price (100 pieces)"),
-        getUiText("price_1_piece_label", "Price (1 piece)"),
-        getUiText("price_1_tray_label", "Price (1 tray)"),
-      ];
-    }
-    return [
-      getUiText("max_price_rs", "Max Price (Rs.)"),
-      getUiText("min_price_rs", "Min Price (Rs.)"),
-      getUiText("modal_price_rs", "Modal Price (Rs.)"),
-    ];
+  function getPriceHeaders(row) {
+    return getRowPriceProfile(row).columns.map((column) => column.label);
   }
 
   function buildMetaEntries(entries) {
@@ -977,64 +1109,34 @@
   }
 
   function renderPriceSection(row, previousRow, priceMode, canonicalKey) {
-    if (priceMode === "single") {
-      return [
-        renderPriceGroup("max", getUiText("price_100_pieces_label", "Price (100 pieces)"), row.price100Pieces, getPreviousPriceDelta(row, canonicalKey, previousRow)),
-        renderPriceGroup("min", getUiText("price_1_piece_label", "Price (1 piece)"), row.price1Piece, null),
-        renderPriceGroup("modal", getUiText("price_1_tray_label", "Price (1 tray)"), row.price1Tray, null),
-      ].join("");
-    }
-
-    return [
-      renderPriceGroup("max", getUiText("max_price_rs", "Max Price (Rs.)"), row.maxPrice, getPreviousPriceDelta(row, "maxPrice", previousRow)),
-      renderPriceGroup("min", getUiText("min_price_rs", "Min Price (Rs.)"), row.minPrice, getPreviousPriceDelta(row, "minPrice", previousRow)),
-      renderPriceGroup("modal", getUiText("modal_price_rs", "Modal Price (Rs.)"), row.modalPrice, getPreviousPriceDelta(row, "modalPrice", previousRow)),
-    ].join("");
+    return getRowPriceProfile(row).columns.map((column) => {
+      return renderPriceGroup(
+        column.kind,
+        column.label,
+        row[column.key],
+        getPreviousPriceDelta(row, column.key, previousRow)
+      );
+    }).join("");
   }
 
   function renderPriceColumns(row, previousRow, priceMode, canonicalKey) {
-    if (priceMode === "single") {
-      return `
-        <td class="result-col-price">
-          <span class="price-value price-value-max">${formatCurrency(row.price100Pieces)}</span>
-          ${renderPriceDelta(getPreviousPriceDelta(row, canonicalKey, previousRow))}
-        </td>
-        <td class="result-col-price">
-          <span class="price-value price-value-min">${formatCurrency(row.price1Piece)}</span>
-        </td>
-        <td class="result-col-price">
-          <span class="price-value price-value-modal">${formatCurrency(row.price1Tray)}</span>
-        </td>
-      `;
-    }
-
-    return `
+    return getRowPriceProfile(row).columns.map((column) => `
       <td class="result-col-price">
-        <span class="price-value price-value-max">${formatCurrency(row.maxPrice)}</span>
-        ${renderPriceDelta(getPreviousPriceDelta(row, "maxPrice", previousRow))}
+        <span class="price-value price-value-${escapeAttribute(column.kind)}">${formatCurrency(row[column.key])}</span>
+        ${renderPriceDelta(getPreviousPriceDelta(row, column.key, previousRow))}
       </td>
-      <td class="result-col-price">
-        <span class="price-value price-value-min">${formatCurrency(row.minPrice)}</span>
-        ${renderPriceDelta(getPreviousPriceDelta(row, "minPrice", previousRow))}
-      </td>
-      <td class="result-col-price">
-        <span class="price-value price-value-modal">${formatCurrency(row.modalPrice)}</span>
-        ${renderPriceDelta(getPreviousPriceDelta(row, "modalPrice", previousRow))}
-      </td>
-    `;
+    `).join("");
   }
 
-  function getChartMetricKeys(mode) {
-    if (mode === "single") {
-      return [
-        { key: "price100Pieces", color: PRICE_COLORS.max, strokeWidth: "3.5", dashArray: "" },
-      ];
-    }
-    return [
-      { key: "minPrice", color: PRICE_COLORS.min, strokeWidth: "3", dashArray: "" },
-      { key: "modalPrice", color: PRICE_COLORS.modal, strokeWidth: "3", dashArray: "10 6" },
-      { key: "maxPrice", color: PRICE_COLORS.max, strokeWidth: "3.5", dashArray: "" },
-    ];
+  function getChartMetricKeys(row) {
+    return getRowPriceProfile(row).columns.map((column) => ({
+      key: column.key,
+      kind: column.kind,
+      label: column.label,
+      color: column.color,
+      strokeWidth: column.strokeWidth,
+      dashArray: column.dashArray,
+    }));
   }
 
   function formatArrivalsUnits(row) {
@@ -1814,11 +1916,10 @@
   }
 
   function renderResultsTableHeaderCells(columns) {
-    const priceHeaders = getPriceHeaders(columns.mode);
     return `
       ${columns.headers.map((header) => `<th>${escapeHtml(header)}</th>`).join("")}
       ${columns.showArrivals ? `<th>${escapeHtml(getUiText("arrivals_units_header", "Arrivals & Units"))}</th>` : ""}
-      ${priceHeaders.map((header) => `<th>${escapeHtml(header)}</th>`).join("")}
+      ${columns.priceHeaders.map((header) => `<th>${escapeHtml(header)}</th>`).join("")}
       <th>${escapeHtml(getUiText("latest_update", "Latest Update"))}</th>
       <th>${escapeHtml(getUiText("previous_update", "Previous Update"))}</th>
     `;
@@ -1829,7 +1930,8 @@
     const sampleRow = state.cachedVisibleRows[0] || state.baseRows[0] || null;
     const mode = getRowPriceMode(sampleRow);
     const showArrivals = sampleRow ? hasArrivalsData(sampleRow) : true;
-    const fixed = 2 + getPriceHeaders(mode).length + (showArrivals ? 1 : 0);
+    const priceHeaders = getPriceHeaders(sampleRow);
+    const fixed = 2 + priceHeaders.length + (showArrivals ? 1 : 0);
     const includeVariety = state.context && state.context.filters.includes("variety");
     const includeGrade = rowsHaveValues(state.baseRows, "grade");
 
@@ -1852,6 +1954,7 @@
           includeGrade
         ),
         count: headers.length + fixed,
+        priceHeaders,
       };
     }
 
@@ -1874,6 +1977,7 @@
           includeGrade
         ),
         count: headers.length + fixed,
+        priceHeaders,
       };
     }
 
@@ -1893,6 +1997,7 @@
           includeGrade
         ),
         count: headers.length + fixed,
+        priceHeaders,
       };
     }
 
@@ -1914,6 +2019,7 @@
         includeGrade
       ),
       count: headers.length + fixed,
+      priceHeaders,
     };
   }
 
@@ -2167,7 +2273,7 @@
     }
 
     const priceMode = getRowPriceMode(rows[0]);
-    const chartMetricKeys = getChartMetricKeys(priceMode);
+    const chartMetricKeys = getChartMetricKeys(rows[0]);
     const canonicalKey = getCanonicalPriceKey(rows[0]);
     const axisWidth = 25;
     const chartRows = rows.length === 1
@@ -2178,7 +2284,6 @@
             maxPrice: 0,
             modalPrice: 0,
             canonicalPrice: 0,
-            price100Pieces: 0,
             isBaseline: true,
           },
           {
@@ -2279,23 +2384,7 @@
       return "";
     }
 
-    if (getRowPriceMode(row) === "single") {
-      return `
-        <div class="chart-summary">
-          <div class="chart-summary-date">
-            <span class="chart-summary-date-label">${escapeHtml(getUiText("selected_date", "Selected Date"))}</span>
-            <strong class="chart-summary-date-value">${escapeHtml(formatDateFull(activePoint.reportDate))}</strong>
-          </div>
-          <div class="chart-summary-metrics">
-            <span class="chart-metric chart-metric-max chart-metric-slot-max">
-              <span class="chart-metric-label"><span class="chart-metric-line chart-metric-line-max"></span>${escapeHtml(getCanonicalPriceLabel(row))}</span>
-              <span class="chart-metric-value">${formatCurrency(activePoint[getCanonicalPriceKey(row)])}</span>
-            </span>
-          </div>
-        </div>
-      `;
-    }
-
+    const profile = getRowPriceProfile(row);
     return `
       <div class="chart-summary">
         <div class="chart-summary-date">
@@ -2303,18 +2392,12 @@
           <strong class="chart-summary-date-value">${escapeHtml(formatDateFull(activePoint.reportDate))}</strong>
         </div>
         <div class="chart-summary-metrics">
-          <span class="chart-metric chart-metric-max chart-metric-slot-max">
-            <span class="chart-metric-label"><span class="chart-metric-line chart-metric-line-max"></span>${escapeHtml(getUiText("max_short", "Max"))}</span>
-            <span class="chart-metric-value">${formatCurrency(activePoint.maxPrice)}</span>
-          </span>
-          <span class="chart-metric chart-metric-min chart-metric-slot-min">
-            <span class="chart-metric-label"><span class="chart-metric-line chart-metric-line-min"></span>${escapeHtml(getUiText("min_short", "Min"))}</span>
-            <span class="chart-metric-value">${formatCurrency(activePoint.minPrice)}</span>
-          </span>
-          <span class="chart-metric chart-metric-modal chart-metric-slot-modal">
-            <span class="chart-metric-label"><span class="chart-metric-line chart-metric-line-modal"></span>${escapeHtml(getUiText("modal_short", "Modal"))}</span>
-            <span class="chart-metric-value">${formatCurrency(activePoint.modalPrice)}</span>
-          </span>
+          ${profile.columns.map((column) => `
+            <span class="chart-metric chart-metric-${escapeAttribute(column.kind)} chart-metric-slot-${escapeAttribute(column.kind)}">
+              <span class="chart-metric-label"><span class="chart-metric-line chart-metric-line-${escapeAttribute(column.kind)}"></span>${escapeHtml(column.label)}</span>
+              <span class="chart-metric-value">${formatCurrency(activePoint[column.key])}</span>
+            </span>
+          `).join("")}
         </div>
       </div>
     `;

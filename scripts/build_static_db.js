@@ -20,6 +20,11 @@ const CATEGORY_VALUES = new Set([
   "grains_and_pulses",
   "miscellaneous",
 ]);
+const SINGLE_PRICE_SOURCE_UNITS = {
+  necc_egg: "100 eggs",
+  spices_board: "per KG",
+  rubber_board: "per 100 kg",
+};
 
 function main() {
   ensureWorkbookExists();
@@ -31,7 +36,7 @@ function main() {
   const mappings = readRows(workbook.Sheets.commodity_mapping);
   const workbookRuns = readRows(workbook.Sheets.runs);
   const existingData = readExistingSnapshotData();
-  const prices = mergePriceRows(existingData.prices, workbookPrices);
+  const prices = normalizeImportedPriceRows(mergePriceRows(existingData.prices, workbookPrices));
   const runs = mergeRunRows(existingData.runs, workbookRuns);
 
   fs.mkdirSync(DATA_DIR, { recursive: true });
@@ -85,9 +90,6 @@ function readExistingSnapshotData() {
           modal_price AS "Modal (Rs.)",
           canonical_price,
           canonical_price_unit,
-          price_100_pieces,
-          price_1_piece,
-          price_1_tray,
           scraped_at
         FROM price_observations_flat
         ORDER BY report_date ASC, commodity ASC, market ASC, variety ASC, grade ASC
@@ -111,9 +113,6 @@ function readExistingSnapshotData() {
           modal_price AS "Modal (Rs.)",
           NULL AS canonical_price,
           '' AS canonical_price_unit,
-          NULL AS price_100_pieces,
-          NULL AS price_1_piece,
-          NULL AS price_1_tray,
           scraped_at
         FROM price_observations_flat
         ORDER BY report_date ASC, commodity ASC, market ASC, variety ASC, grade ASC
@@ -198,9 +197,6 @@ function readFallbackObservationRows() {
     "Modal (Rs.)": row.modalPrice,
     canonical_price: row.canonicalPrice,
     canonical_price_unit: row.canonicalPriceUnit || "",
-    price_100_pieces: row.price100Pieces,
-    price_1_piece: row.price1Piece,
-    price_1_tray: row.price1Tray,
     scraped_at: row.scrapedAt || row.reportDate || "",
   }));
 }
@@ -273,6 +269,45 @@ function mergePriceRows(existingRows, workbookRows) {
 
   merged.sort(comparePriceRows);
   return merged;
+}
+
+function normalizeImportedPriceRows(rows) {
+  return rows
+    .map(normalizeImportedPriceRow)
+    .filter(Boolean)
+    .sort(comparePriceRows);
+}
+
+function normalizeImportedPriceRow(inputRow) {
+  const row = trimObjectStrings({ ...inputRow });
+  const sourceId = row.source_id || "krama";
+  row.source_id = sourceId;
+
+  if (sourceId === "spices_board" && String(row.commodity || "").trim().toLowerCase() === "pepper") {
+    return null;
+  }
+
+  if (sourceId === "csb_silk") {
+    row.Units = "Quintal";
+  }
+
+  if (sourceId === "coffee_board") {
+    row.Units = "50 Kg";
+  }
+
+  if (sourceId === "spices_board" || sourceId === "rubber_board") {
+    if (row.canonical_price === null || row.canonical_price === undefined || row.canonical_price === "") {
+      row.canonical_price = row["Modal (Rs.)"];
+    }
+    row.canonical_price_unit = normalizeCanonicalPriceUnit(sourceId, row.canonical_price_unit || SINGLE_PRICE_SOURCE_UNITS[sourceId]);
+    row["Modal (Rs.)"] = "";
+  }
+
+  if (sourceId === "necc_egg") {
+    row.canonical_price_unit = normalizeCanonicalPriceUnit(sourceId, row.canonical_price_unit || SINGLE_PRICE_SOURCE_UNITS[sourceId]);
+  }
+
+  return row;
 }
 
 function mergeRunRows(existingRuns, workbookRuns) {
@@ -354,6 +389,23 @@ function parseOptionalNumber(value, fieldName) {
     return null;
   }
   return parseNumber(value, fieldName);
+}
+
+function normalizeCanonicalPriceUnit(sourceId, value) {
+  const text = String(value || "").trim();
+  if (!text) {
+    return SINGLE_PRICE_SOURCE_UNITS[sourceId] || null;
+  }
+  if (sourceId === "necc_egg" && text === "100 pieces") {
+    return "100 eggs";
+  }
+  if (sourceId === "spices_board") {
+    return "per KG";
+  }
+  if (sourceId === "rubber_board") {
+    return "per 100 kg";
+  }
+  return text;
 }
 
 function normalizePerishability(value) {
@@ -452,9 +504,6 @@ function createSchema(db) {
       source_id TEXT NOT NULL DEFAULT 'krama',
       canonical_price REAL,
       canonical_price_unit TEXT,
-      price_100_pieces REAL,
-      price_1_piece REAL,
-      price_1_tray REAL,
       scraped_at TEXT NOT NULL
     );
 
@@ -509,9 +558,6 @@ function createSchema(db) {
       po.modal_price,
       po.canonical_price,
       po.canonical_price_unit,
-      po.price_100_pieces,
-      po.price_1_piece,
-      po.price_1_tray,
       po.scraped_at
     FROM price_observations po
     JOIN commodities c ON c.id = po.commodity_id
@@ -589,11 +635,8 @@ function importStaticData(db, prices, mappings, runs, geography, categoryMetadat
       source_id,
       canonical_price,
       canonical_price_unit,
-      price_100_pieces,
-      price_1_piece,
-      price_1_tray,
       scraped_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
   const insertRun = db.prepare(`
     INSERT INTO scrape_runs (
@@ -663,7 +706,11 @@ function importStaticData(db, prices, mappings, runs, geography, categoryMetadat
     const gradeIds = getLookupMap(db, "grades");
     const unitIds = getLookupMap(db, "units");
 
-    validateMarketDistrictCoverage(marketIds, geography.marketMappings, districtIds);
+    validateMarketDistrictCoverage(
+      new Set(prices.filter((row) => (row.source_id || "krama") === "krama").map((row) => row.Market)),
+      geography.marketMappings,
+      districtIds
+    );
     validateCommodityCategoryCoverage(db, categoryLookup);
 
     for (const row of geography.marketMappings) {
@@ -702,10 +749,7 @@ function importStaticData(db, prices, mappings, runs, geography, categoryMetadat
         parseOptionalNumber(row["Modal (Rs.)"], "Modal (Rs.)"),
         row.source_id || "krama",
         parseOptionalNumber(row.canonical_price, "canonical_price"),
-        row.canonical_price_unit || null,
-        parseOptionalNumber(row.price_100_pieces, "price_100_pieces"),
-        parseOptionalNumber(row.price_1_piece, "price_1_piece"),
-        parseOptionalNumber(row.price_1_tray, "price_1_tray"),
+        normalizeCanonicalPriceUnit(row.source_id || "krama", row.canonical_price_unit),
         row.scraped_at
       );
     }
@@ -771,20 +815,20 @@ function getCommodityCategory(commodity, categoryLookup, fallbackCategory = "") 
   return category;
 }
 
-function validateMarketDistrictCoverage(marketIds, marketMappings, districtIds) {
+function validateMarketDistrictCoverage(requiredMarkets, marketMappings, districtIds) {
   const mappedMarkets = new Set();
 
   for (const row of marketMappings) {
     if (!districtIds.has(row.district)) {
       throw new Error(`District mapping refers to unknown district: ${row.district}`);
     }
-    if (!marketIds.has(row.market)) {
+    if (!requiredMarkets.has(row.market)) {
       continue;
     }
     mappedMarkets.add(row.market);
   }
 
-  const missingMarkets = [...marketIds.keys()].filter((market) => !mappedMarkets.has(market));
+  const missingMarkets = [...requiredMarkets].filter((market) => !mappedMarkets.has(market));
   if (missingMarkets.length) {
     throw new Error(`Missing district mappings for markets: ${missingMarkets.join(", ")}`);
   }

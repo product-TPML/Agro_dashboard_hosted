@@ -8,6 +8,13 @@ const PORT = Number(process.env.PORT || 3180);
 const ROOT_DIR = path.resolve(__dirname, "..");
 const PUBLIC_DIR = path.join(__dirname, "public");
 const DB_PATH = path.join(ROOT_DIR, "data", "agro_dashboard.db");
+const SOURCE_PRICE_DISPLAY_UNITS = {
+  necc_egg: "100 eggs",
+  csb_silk: "Kg",
+  spices_board: "per KG",
+  coffee_board: "50 Kg",
+  rubber_board: "per 100 kg",
+};
 
 if (!fs.existsSync(DB_PATH)) {
   throw new Error(`Database not found: ${DB_PATH}`);
@@ -60,10 +67,7 @@ const contextStatements = {
       max_price,
       modal_price,
       canonical_price,
-      canonical_price_unit,
-      price_100_pieces,
-      price_1_piece,
-      price_1_tray
+      canonical_price_unit
     FROM price_observations_flat
     WHERE commodity = ?
     ORDER BY market ASC, variety ASC, grade ASC, report_date DESC
@@ -85,10 +89,7 @@ const contextStatements = {
       max_price,
       modal_price,
       canonical_price,
-      canonical_price_unit,
-      price_100_pieces,
-      price_1_piece,
-      price_1_tray
+      canonical_price_unit
     FROM price_observations_flat
     WHERE market = ?
     ORDER BY commodity ASC, variety ASC, grade ASC, report_date DESC
@@ -110,10 +111,7 @@ const contextStatements = {
       max_price,
       modal_price,
       canonical_price,
-      canonical_price_unit,
-      price_100_pieces,
-      price_1_piece,
-      price_1_tray
+      canonical_price_unit
     FROM price_observations_flat
     WHERE commodity = ? AND variety = ?
     ORDER BY market ASC, grade ASC, report_date DESC
@@ -278,28 +276,40 @@ function handleContext(requestUrl, res) {
 
   return sendJson(res, 200, {
     context,
-    rows: rows.map((row) => ({
-      rowKey: row.row_key,
-      reportDate: row.report_date,
-      sourceId: row.source_id,
-      commodity: row.commodity,
-      perishability: row.perishability,
-      category: row.category,
-      market: row.market,
-      variety: row.variety,
-      grade: row.grade,
-      arrivals: row.arrivals,
-      unit: row.unit,
-      minPrice: row.min_price,
-      maxPrice: row.max_price,
-      modalPrice: row.modal_price,
-      canonicalPrice: row.canonical_price,
-      canonicalPriceUnit: row.canonical_price_unit,
-      price100Pieces: row.price_100_pieces,
-      price1Piece: row.price_1_piece,
-      price1Tray: row.price_1_tray,
-    })),
+    rows: rows.map(mapObservationRow),
   });
+}
+
+function mapObservationRow(row) {
+  return {
+    rowKey: row.row_key,
+    reportDate: row.report_date,
+    sourceId: row.source_id,
+    commodity: row.commodity,
+    perishability: row.perishability,
+    category: row.category,
+    market: row.market,
+    variety: row.variety,
+    grade: row.grade,
+    arrivals: row.arrivals,
+    unit: row.unit,
+    minPrice: row.min_price,
+    maxPrice: row.max_price,
+    modalPrice: row.modal_price,
+    canonicalPrice: row.canonical_price,
+    canonicalPriceUnit: row.canonical_price_unit,
+    priceDisplayUnit: getPriceDisplayUnit(row),
+  };
+}
+
+function getPriceDisplayUnit(row) {
+  if (row.source_id === "spices_board" || row.source_id === "rubber_board" || row.source_id === "necc_egg") {
+    return row.canonical_price_unit || SOURCE_PRICE_DISPLAY_UNITS[row.source_id] || null;
+  }
+  if (row.source_id === "coffee_board") {
+    return row.unit || SOURCE_PRICE_DISPLAY_UNITS.coffee_board;
+  }
+  return SOURCE_PRICE_DISPLAY_UNITS[row.source_id] || null;
 }
 
 function handleSearchIndex(res) {
