@@ -10,7 +10,9 @@
     "backfill:perishability": "node scripts/backfill_perishability.js",
     "build:static-db": "node scripts/build_static_db.js",
     "dashboard:local": "node local-dashboard/server.js",
-    "build:pages": "node scripts/build_pages_site.js"
+    "build:pages": "node scripts/build_pages_site.js",
+    "update-data": "node scripts/update-data.js",
+    "postinstall": "node scripts/check-gh-auth.js"
   },
   "keywords": [],
   "author": "",
